@@ -16,7 +16,7 @@ class LicenseManager:
     """Manages software licensing with live GitHub verification (no offline mode)."""
     
     # GitHub configuration
-    GITHUB_REPO = "YOUR_GITHUB_USERNAME/AutoPickingPy"  # CHANGE THIS
+    GITHUB_REPO = "akanaul/autopickingpy"
     GITHUB_AUTHORIZED_FILE = "AUTHORIZED_USERS.json"
     GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{GITHUB_AUTHORIZED_FILE}"
     
