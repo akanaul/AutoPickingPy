@@ -20,6 +20,9 @@ from openpyxl.utils.datetime import from_excel
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
 
+# License and authorization
+from license_manager import check_license_and_authorize
+
 try:
     from odf.opendocument import OpenDocumentSpreadsheet
     from odf.table import Table, TableRow, TableCell, TableColumn, CoveredTableCell
@@ -564,12 +567,20 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # Configure logging
     log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "log.txt")
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
         handlers=[logging.FileHandler(log_path, mode="w", encoding="utf-8"), logging.StreamHandler(sys.stdout)],
     )
+    
+    # Check license and authorize user (required before running application)
+    if not check_license_and_authorize():
+        print("\n[CRITICAL] Authorization failed. Cannot continue.")
+        sys.exit(1)
+    
+    print("\n[INFO] Authorization successful. Starting application...\n")
     
     try:
         main()

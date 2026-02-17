@@ -188,7 +188,7 @@ See LICENSE file for complete terms.
         Authorize a user (LIVE GitHub verification required).
         
         Args:
-            username: GitHub username or email
+            username: GitHub username
             machine_id: Optional machine ID for hardware lock
             
         Returns:
@@ -209,6 +209,59 @@ See LICENSE file for complete terms.
             print(f"[ERROR] Reason: {reason}")
             print(f"\n[INFO] Contact Clebson Luan Alves da Silva for licensing")
             self.log_authorization_attempt(username, "DENIED", reason)
+            return False
+    
+    def verify_login(self, username: str, password: str = None) -> bool:
+        """
+        Verify user login credentials with GitHub.
+        Requires user to authenticate with valid GitHub credentials.
+        
+        Args:
+            username: GitHub username
+            password: GitHub personal access token or password
+            
+        Returns:
+            True if credentials verified, False otherwise
+        """
+        print(f"\n[INFO] Verifying GitHub login credentials...")
+        
+        # If no password provided, get it from prompt
+        if password is None:
+            import getpass
+            password = getpass.getpass("GitHub Personal Access Token (or password): ")
+        
+        if not password:
+            print("[ERROR] No credentials provided")
+            return False
+        
+        # Verify credentials via GitHub API
+        try:
+            auth = (username, password)
+            response = requests.get(
+                "https://api.github.com/user",
+                auth=auth,
+                timeout=self.NETWORK_TIMEOUT
+            )
+            
+            if response.status_code == 200:
+                user_data = response.json()
+                github_username = user_data.get('login', '').lower()
+                
+                if github_username == username.lower():
+                    print(f"[SUCCESS] ✓ GitHub login verified for @{github_username}")
+                    return True
+                else:
+                    print(f"[ERROR] GitHub username mismatch")
+                    return False
+            elif response.status_code == 401:
+                print("[ERROR] Invalid GitHub credentials")
+                return False
+            else:
+                print(f"[ERROR] GitHub API returned status {response.status_code}")
+                return False
+                
+        except requests.exceptions.RequestException as e:
+            print(f"[ERROR] Failed to verify credentials: {e}")
             return False
     
     def get_authorization_info(self, username: str) -> dict:
@@ -259,10 +312,76 @@ class LicenseDisplay:
             print(f"  STATUS: ⚠ REVOKED")
 
 
+def get_github_username_from_git() -> str:
+    """
+    Auto-detect GitHub username from local Git configuration.
+    Tries multiple sources:
+    1. Git user.name (if contains github username)
+    2. Git user.email (extracts username from email)
+    3. GitHub CLI auth (gh api user -q .login)
+    
+    Returns empty string if not found.
+    """
+    import subprocess
+    
+    try:
+        # Try git user.name
+        result = subprocess.run(
+            ['git', 'config', '--get', 'user.name'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            name = result.stdout.strip().lower()
+            # Check if it looks like a GitHub username (no spaces, short)
+            if name and ' ' not in name and len(name) < 40:
+                return name
+    except Exception:
+        pass
+    
+    try:
+        # Try git user.email - extract username from email
+        result = subprocess.run(
+            ['git', 'config', '--get', 'user.email'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            email = result.stdout.strip()
+            # Extract part before @ if it's a GitHub email
+            if '@' in email:
+                username = email.split('@')[0].lower()
+                if username and ' ' not in username:
+                    return username
+    except Exception:
+        pass
+    
+    try:
+        # Try GitHub CLI if installed
+        result = subprocess.run(
+            ['gh', 'api', 'user', '-q', '.login'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            username = result.stdout.strip().lower()
+            if username:
+                return username
+    except Exception:
+        pass
+    
+    return ""
+
+
 def get_authorized_username() -> str:
     """
-    Get GitHub username from environment variable or prompt user.
-    Priority: AUTOPICKING_USER env var > prompt
+    Get GitHub username from multiple sources in priority order:
+    1. AUTOPICKING_USER environment variable
+    2. Auto-detect from Git config
+    3. Prompt user if auto-detection fails
     """
     # Try environment variable first (for automated/headless execution)
     username = os.environ.get('AUTOPICKING_USER')
@@ -270,7 +389,14 @@ def get_authorized_username() -> str:
         print(f"[INFO] Using username from AUTOPICKING_USER environment variable")
         return username
     
-    # Prompt user with instructions
+    # Try auto-detect from Git configuration
+    print("[INFO] Attempting to auto-detect GitHub account from Git config...")
+    username = get_github_username_from_git()
+    if username:
+        print(f"[SUCCESS] ✓ Detected GitHub account: @{username}")
+        return username
+    
+    # Fall back to manual prompt
     print("\n" + "="*80)
     print("Enter your GitHub username for authorization verification")
     print("(Must be registered in the GitHub gist authorization database)")
@@ -282,7 +408,13 @@ def get_authorized_username() -> str:
 def check_license_and_authorize() -> bool:
     """
     Main function to check license and authorize user.
-    Requires live GitHub connection - no offline mode allowed.
+    Fully automated with auto-detect based account detection.
+    
+    Steps:
+    1. Get GitHub username (auto-detect or prompt)
+    2. Verify GitHub login credentials (password/PAT)
+    3. Check if user is in authorization database
+    4. Grant or deny access
     
     Call this at the start of your main application.
     
@@ -293,12 +425,31 @@ def check_license_and_authorize() -> bool:
         manager = LicenseManager()
         manager.load_license_header()
         
-        # Get username
+        # Step 1: Get username (with auto-detect)
+        print("\n" + "="*80)
+        print("Initializing Authorization System")
+        print("="*80)
         username = get_authorized_username()
         if not username:
             print("[ERROR] No username provided")
             manager.log_authorization_attempt("UNKNOWN", "DENIED", "No username provided")
             return False
+        
+        # Step 2: Verify GitHub login credentials
+        print("\n" + "="*80)
+        print(f"GitHub Login Verification for @{username}")
+        print("="*80)
+        print("Provide your GitHub credentials to verify account ownership.")
+        print("Use your GitHub password or a Personal Access Token (PAT).")
+        print("For security, credentials are NOT saved or logged.")
+        
+        if not manager.verify_login(username):
+            print("\n[ERROR] GitHub login verification failed")
+            manager.log_authorization_attempt(username, "DENIED", "Login verification failed")
+            return False
+        
+        # Step 3: Check authorization
+        print("\n[INFO] Checking authorization database...")
         
         # Authorize (LIVE GitHub check)
         return manager.authorize(username)

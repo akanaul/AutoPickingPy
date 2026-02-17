@@ -1,0 +1,387 @@
+================================================================================
+                    GITHUB LOGIN VERIFICATION
+                        Authentication Required
+================================================================================
+
+AutoPickingPy now requires users to verify their GitHub login credentials
+before accessing the application. This ensures:
+
+✓ User is actually the GitHub account owner
+✓ Extra security layer beyond authorization database
+✓ Live credential verification with GitHub
+✓ No passwords stored locally
+
+
+================================================================================
+                      HOW LOGIN VERIFICATION WORKS
+================================================================================
+
+THREE-STEP AUTHENTICATION:
+
+1. ENTER GITHUB USERNAME:
+   GitHub Username: akanaul
+   
+2. PROVIDE CREDENTIALS:
+   GitHub Personal Access Token (or password): [hidden input]
+   
+3. VERIFY WITH GITHUB:
+   - System connects to GitHub API
+   - Verifies credentials
+   - Confirms username matches
+   - Checks authorization database
+   
+RESULT:
+   [SUCCESS] ✓ Authorization GRANTED (if all checks pass)
+   OR
+   [ERROR] ✗ Authorization DENIED (if any check fails)
+
+
+================================================================================
+                        GITHUB CREDENTIALS
+================================================================================
+
+Two types of credentials are supported:
+
+1. GITHUB PASSWORD (Legacy):
+   - Your GitHub account password
+   - Works but less secure
+   - Not recommended for long-term use
+
+2. PERSONAL ACCESS TOKEN (Recommended):
+   - Generate at: https://github.com/settings/tokens
+   - More secure than password
+   - Can be revoked independently
+   - Can set specific permissions
+   - Better for automation
+
+
+================================================================================
+                  CREATE A PERSONAL ACCESS TOKEN
+================================================================================
+
+STEP 1: Go to GitHub Settings
+────────────────────────────
+- Visit: https://github.com/settings/tokens
+- Or: GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic)
+
+
+STEP 2: Generate New Token
+───────────────────────────
+- Click "Generate new token" button
+- Select "Generate new token (classic)"
+
+
+STEP 3: Configure Token
+────────────────────────
+- Token name: "AutoPickingPy" (or any name)
+- Expiration: Choose duration (90 days recommended)
+- Scopes: Select minimum permissions:
+  ✓ user:email  (read user email)
+  ✓ read:user   (read user info)
+  
+  Do NOT check:
+  ✗ repo
+  ✗ admin
+  ✗ delete_repo
+
+
+STEP 4: Generate Token
+──────────────────────
+- Click "Generate token" button
+- Copy the token immediately (shown once only)
+- Save it securely (password manager recommended)
+
+
+STEP 5: Use Token for Authentication
+──────────────────────────────────────
+When prompted:
+  GitHub Personal Access Token (or password): ghp_xxxxxxxxxxxxxxxxxxxxx
+  
+(Paste your token here instead of password)
+
+
+================================================================================
+                      SECURITY BEST PRACTICES
+================================================================================
+
+DO:
+  ✓ Use Personal Access Token instead of password
+  ✓ Set token expiration date (90 days)
+  ✓ Use minimal scopes (read-only)
+  ✓ Store token in secure password manager
+  ✓ Rotate tokens periodically
+  ✓ Revoke token if compromised
+
+DON'T:
+  ✗ Share your GitHub password
+  ✗ Share your Personal Access Token
+  ✗ Commit token to version control
+  ✗ Use indefinite token expiration
+  ✗ Grant unnecessary permissions
+  ✗ Store token in plain text
+
+
+================================================================================
+                    AUTHENTICATION FLOW DIAGRAM
+================================================================================
+
+┌─────────────────────────────────────────────────────────┐
+│ AutoPickingPy Application Starts                        │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ↓
+┌─────────────────────────────────────────────────────────┐
+│ Display License Header                                  │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ↓
+┌─────────────────────────────────────────────────────────┐
+│ Prompt for GitHub Username                              │
+│ GitHub Username: _____________________                  │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ↓
+┌─────────────────────────────────────────────────────────┐
+│ Require GitHub Login Verification                       │
+│ Enter Personal Access Token or Password                 │
+│ GitHub Personal Access Token (or password): _____        │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ↓
+        ┌────────────┴─────────────┐
+        │                          │
+        ↓                          ↓
+   CREDENTIALS                 CREDENTIALS
+   VALID?                       INVALID?
+        │                          │
+        ↓                          ↓
+   Username --[YES]--→  ┌──────────────────────┐
+   Verified             │ [ERROR]              │
+        │               │ Invalid credentials  │
+        │               │ Access DENIED        │
+        ↓               └──────────────────────┘
+   ┌──────────────────────────┐
+   │ Check Authorization      │
+   │ Database (Gist)          │
+   └────────────┬─────────────┘
+                │
+        ┌───────┴────────┐
+        │                │
+        ↓                ↓
+    AUTHORIZED?      UNAUTHORIZED?
+    (In Gist)        (Not in Gist)
+        │                │
+        ↓                ↓
+   ┌─────────┐      ┌──────────────────────┐
+   │ [SUCCESS]      │ [ERROR]              │
+   │ ✓ GRANTED      │ User not authorized  │
+   │               │ Access DENIED        │
+   │ Application    └──────────────────────┘
+   │ RUNS
+   └─────────┘
+
+
+================================================================================
+                      TROUBLESHOOTING
+================================================================================
+
+ERROR: "Invalid GitHub credentials"
+───────────────────────────────────
+
+Cause: Wrong password or token
+
+Solutions:
+1. Verify your GitHub username is correct
+2. Check if using correct password
+3. If using PAT, ensure token hasn't expired
+4. Generate new PAT if needed
+5. Try again
+
+
+ERROR: "GitHub username mismatch"
+─────────────────────────────────
+
+Cause: Token belongs to different user
+
+Solutions:
+1. Verify you're using correct GitHub username
+2. Verify token is for your GitHub account
+3. Generate new token if needed
+4. Try with correct username
+
+
+ERROR: "GitHub API returned status 401"
+────────────────────────────────────────
+
+Cause: Authentication failed with GitHub
+
+Solutions:
+1. Check internet connection
+2. Verify credentials are correct
+3. Check if GitHub is online
+4. Try again after waiting a few seconds
+
+
+ERROR: "Failed to verify credentials"
+──────────────────────────────────────
+
+Cause: Network error or GitHub unreachable
+
+Solutions:
+1. Check internet connection
+2. Check GitHub status: https://www.githubstatus.com
+3. Try again later
+4. Check firewall/proxy settings
+
+
+ERROR: "No credentials provided"
+────────────────────────────────
+
+Cause: You pressed Enter without entering token/password
+
+Solutions:
+1. Be careful to enter credentials
+2. When prompted, paste or type credentials
+3. Press Enter to submit
+
+
+================================================================================
+                    COMMON QUESTIONS
+================================================================================
+
+Q: Why do I need to verify GitHub login?
+A: This ensures authentication with actual GitHub servers to prevent:
+   - Unauthorized access
+   - Stolen credentials/brute force attacks
+   - Impersonation
+
+Q: Is my password/token logged or saved?
+A: NO. Credentials are ONLY transmitted to GitHub API for verification.
+   They are NOT stored locally, logged, or saved anywhere.
+
+Q: What if I don't have a Personal Access Token?
+A: You can use your GitHub password instead (less secure).
+   Or generate a token at: https://github.com/settings/tokens
+
+Q: Can I use an OAuth token?
+A: No. Only Personal Access Tokens (classic) or passwords work.
+
+Q: What if my token expires?
+A: You'll need to generate a new token and use that.
+   Expired tokens are rejected by GitHub.
+
+Q: How secure is this?
+A: Very secure:
+   - Live verification with GitHub
+   - No local password storage
+   - No session tokens
+   - No cached credentials
+   - Fresh authentication every run
+
+Q: Can I automate login?
+A: Yes, use environment variable:
+   set AUTOPICKING_USER=your_username
+   
+   Password still required when prompted.
+
+
+================================================================================
+                    COMMAND LINE USAGE
+================================================================================
+
+NORMAL USAGE (Interactive):
+   python gerar_solicitacao_pickings.py
+   
+   Prompts for:
+   1. GitHub username
+   2. GitHub credentials (token/password)
+   3. System verifies and runs
+
+
+WITH ENVIRONMENT VARIABLE (Semi-automated):
+   set AUTOPICKING_USER=yourusername
+   python gerar_solicitacao_pickings.py
+   
+   Still prompts for credentials (for security)
+
+
+BATCH/SCRIPT USAGE:
+   Note: Cannot pass credentials via command line for security.
+   Always requires manual entry or environment variable.
+
+
+================================================================================
+                    SECURITY SUMMARY
+================================================================================
+
+AUTHENTICATION LAYERS:
+
+1. GitHub Username
+   - Identifies which user is logging in
+   - Must exist in authorization database
+
+2. GitHub Credentials (Password/Token)
+   - Live verification with GitHub API
+   - Confirms user owns the account
+
+3. Authorization Database Check
+   - Verifies user is in gist
+   - Checks expiration date
+   - Checks revocation status
+
+RESULT:
+   ✓ Only authorized GitHub users can access
+   ✓ No fake/impersonated logins possible
+   ✓ Administrator can revoke access instantly
+   ✓ Full audit trail of all attempts
+
+
+================================================================================
+                    FOR ADMINISTRATORS
+================================================================================
+
+MANAGING USER ACCESS:
+
+Create Secret Gist (if not done):
+  1. Go to https://gist.github.com
+  2. Create "AUTHORIZED_USERS.json" with GitHub usernames
+  3. Keep gist SECRET (private)
+
+Add New User:
+  1. Edit gist
+  2. Add GitHub username as key:
+     {
+       "github_username": {
+         "full_name": "User Name",
+         "expires": "2027-12-31T23:59:59",
+         "revoked": false
+       }
+     }
+  3. Update gist
+
+Revoke User Immediately:
+  1. Edit gist
+  2. Set "revoked": true for user
+  3. Update gist
+  4. User denied within ~30 seconds
+
+Monitor Access:
+  Check audit log: ~/.autopickingpy/authorization_audit.log
+  Shows all login attempts and results
+
+
+================================================================================
+                        NEXT STEPS
+================================================================================
+
+1. ✓ Create GitHub Personal Access Token
+2. ✓ Create secret gist with authorized users
+3. ✓ Configure license_manager.py with gist URL
+4. ✓ Test login with authorized user
+5. ✓ Distribute application to users
+6. ✓ Users authenticate with GitHub credentials
+
+
+For setup help: See CREATE_SECRET_GIST.txt or GIST_SETUP.txt
+
+================================================================================
