@@ -1,0 +1,365 @@
+================================================================================
+                 GITHUB USERNAME AUTHORIZATION FORMAT
+                           (Complete Integration)
+================================================================================
+
+The AutoPickingPy authorization system now uses GitHub username format for
+complete integration with GitHub. Users authenticate using their GitHub username.
+
+
+================================================================================
+                         AUTHORIZATION FORMAT
+================================================================================
+
+Simplified JSON format (in GitHub gist):
+
+{
+  "github_username": {
+    "full_name": "User's Full Name",
+    "expires": "2027-12-31T23:59:59",
+    "revoked": false
+  }
+}
+
+
+FIELD EXPLANATIONS:
+
+  github_username (key)
+    - Must be the actual GitHub username
+    - Case-sensitive
+    - User enters this to authenticate
+    - Example: "akanaul", "john-smith", "demo"
+
+  full_name
+    - User's full name for identification
+    - Display purposes only
+    - No validation
+    - Example: "Clebson Luan Alves da Silva"
+
+  expires
+    - ISO 8601 format: YYYY-MM-DDTHH:MM:SS
+    - User denied after this datetime
+    - Set to future date to allow access
+    - Example: "2027-12-31T23:59:59" (all of 2027)
+
+  revoked
+    - Boolean: true or false
+    - true = user immediately denied
+    - false = user allowed (if not expired)
+    - Used for emergency access revocation
+
+
+================================================================================
+                         EXAMPLE GIST CONTENT
+================================================================================
+
+{
+  "akanaul": {
+    "full_name": "Clebson Luan Alves da Silva",
+    "expires": "2027-12-31T23:59:59",
+    "revoked": false
+  },
+  "demo": {
+    "full_name": "Demo User",
+    "expires": "2025-12-31T23:59:59",
+    "revoked": false
+  },
+  "johndoe": {
+    "full_name": "John Doe",
+    "expires": "2026-06-30T23:59:59",
+    "revoked": false
+  },
+  "janesmith": {
+    "full_name": "Jane Smith",
+    "expires": "2026-03-15T23:59:59",
+    "revoked": true
+  }
+}
+
+Result:
+  - akanaul: AUTHORIZED (valid through 2027)
+  - demo: AUTHORIZED (valid through 2025)
+  - johndoe: AUTHORIZED (valid through June 2026)
+  - janesmith: DENIED (revoked)
+  - anyoneelse: DENIED (not in gist)
+
+
+================================================================================
+                        AUTHENTICATION FLOW
+================================================================================
+
+1. USER STARTS APP:
+   python gerar_solicitacao_pickings.py
+
+2. APP PROMPTS:
+   Enter your GitHub username for authorization verification:
+   GitHub Username: _
+
+3. USER ENTERS GITHUB USERNAME:
+   GitHub Username: akanaul
+
+4. APP VERIFIES WITH GITHUB GIST:
+   - Fetches gist content
+   - Looks for key "akanaul"
+   - Checks if revoked: false
+   - Checks if expires in future
+   - All checks pass → AUTHORIZED
+
+5. RESULT:
+   [SUCCESS] ✓ Authorization GRANTED
+   Application starts running
+
+
+================================================================================
+                        COMMON TASKS
+================================================================================
+
+ADD NEW USER (GitHub username: newuser):
+
+1. Go to gist, click Edit
+2. Add entry:
+   "newuser": {
+     "full_name": "New User Name",
+     "expires": "2027-12-31T23:59:59",
+     "revoked": false
+   },
+3. Update gist
+4. User can now login with "newuser"
+
+
+REVOKE USER IMMEDIATELY (GitHub username: baduser):
+
+1. Go to gist, click Edit
+2. Change line:
+   FROM: "revoked": false
+   TO:   "revoked": true
+3. Update gist
+4. User "baduser" denied on next login
+
+
+EXPIRE USER ON SPECIFIC DATE (GitHub username: tempuser):
+
+1. Go to gist, click Edit
+2. Set expires date:
+   "expires": "2026-05-15T23:59:59"  (user denied after May 15, 2026)
+3. Update gist
+
+
+DISABLE USER (multiple users):
+
+1. Users not in gist = not authorized
+2. Delete entire user block from gist
+3. Or set "revoked": true
+4. Update gist
+
+
+================================================================================
+                        VALIDATION RULES
+================================================================================
+
+Username MUST be:
+  ✓ Valid GitHub username
+  ✓ Exactly match key in gist (case-sensitive)
+  ✓ Not empty
+  ✗ Cannot use email address
+  ✗ Cannot use full name
+
+Full Name:
+  ✓ Any text (for identification)
+  ✓ Can contain spaces, special characters
+  ✓ No validation rules
+
+Expires Date:
+  ✓ ISO 8601 format: YYYY-MM-DDTHH:MM:SS
+  ✓ Can be any future date
+  ✓ Timezone: UTC (no timezone suffix needed)
+  ✗ Cannot be empty
+  ✗ Must be valid date
+
+Revoked:
+  ✓ Must be: true or false
+  ✓ Lowercase (not True/False)
+  ✗ Cannot be null
+  ✗ Cannot be string "true" or "false"
+
+
+================================================================================
+                        INTEGRATION WITH GITHUB
+================================================================================
+
+BENEFITS OF GITHUB USERNAME FORMAT:
+
+1. COMPLETE INTEGRATION:
+   ✓ Users authenticate with GitHub username
+   ✓ No separate username system needed
+   ✓ Matches GitHub identity
+
+2. EASY MANAGEMENT:
+   ✓ GitHub username = authorization key
+   ✓ No need to lookup username elsewhere
+   ✓ Users already know their GitHub username
+
+3. SCALABILITY:
+   ✓ Works with GitHub organizations
+   ✓ Can integrate with GitHub Teams in future
+   ✓ Ready for enterprise use
+
+4. SIMPLICITY:
+   ✓ Minimal fields (just full_name, expires, revoked)
+   ✓ No email, contact, or purpose fields
+   ✓ Clean, focused authorization model
+
+
+================================================================================
+                        EXAMPLE SCENARIOS
+================================================================================
+
+SCENARIO 1: New Employee joins team
+
+Step 1: Get employee's GitHub username (e.g., "janedoe")
+Step 2: Edit gist, add:
+   "janedoe": {
+     "full_name": "Jane Doe",
+     "expires": "2027-12-31T23:59:59",
+     "revoked": false
+   }
+Step 3: Update gist
+Step 4: Employee can now login with username "janedoe"
+Step 5: Granted access immediately
+
+
+SCENARIO 2: Employee changes role, restricted access
+
+Step 1: Set expiration 1 month after new role starts
+   "janedoe": {
+     ...,
+     "expires": "2026-03-31T23:59:59"
+   }
+Step 2: After date, access automatically revoked
+Step 3: No action needed on access date
+
+
+SCENARIO 3: Emergency access revocation
+
+Step 1: Employee loses laptop/credentials compromised
+Step 2: Edit gist, set revoked to true:
+   "badactoruser": {
+     ...,
+     "revoked": true
+   }
+Step 3: Update gist
+Step 4: User denied immediately (within ~30 seconds)
+Step 5: No need to change passwords or rebuild executable
+
+
+SCENARIO 4: Temporary contractor access
+
+Step 1: Add with limited expiration:
+   "contractor123": {
+     "full_name": "Contractor Name",
+     "expires": "2026-04-30T23:59:59",
+     "revoked": false
+   }
+Step 2: Access automatically expires
+Step 3: No cleanup needed after contract ends
+
+
+================================================================================
+                        TROUBLESHOOTING
+================================================================================
+
+ERROR: "User 'username' not found in authorization database"
+──────────────────────────────────────────────────────────
+
+Cause: Username not in gist OR username mismatch
+
+Solutions:
+1. Verify you entered correct GitHub username
+2. Check capitalization (case-sensitive)
+3. Verify username exists in gist
+4. Ask admin to confirm you're in authorization list
+
+
+ERROR: "Authorization expired on 2025-12-31T..."
+──────────────────────────────────────────────
+
+Cause: Your expiration date is in the past
+
+Solutions:
+1. Contact admin to extend expiration
+2. Admin edits gist, changes expires to future date
+3. You can login again within ~30 seconds
+
+
+ERROR: "License has been REVOKED"
+──────────────────────────────────
+
+Cause: Your account was manually revoked
+
+Solutions:
+1. Contact admin to ask why
+2. Admin must set "revoked": false to re-enable
+3. You can login again within ~30 seconds
+
+
+ERROR: "GitHub unreachable - cannot verify authorization"
+──────────────────────────────────────────────────────────
+
+Cause: No internet connection or GitHub is down
+
+Solutions:
+1. Check internet connection
+2. Try again after waiting a few seconds
+3. Verify GitHub is online: https://www.githubstatus.com
+
+
+ERROR: Getting different usernames than expected in git log
+────────────────────────────────────────────────────────────
+
+Cause: Files have been edited since last gist creation
+
+Solution:
+Recreate gist with current GIST_CONTENT.json template
+
+
+================================================================================
+                        QUICK REFERENCE
+================================================================================
+
+LOGIN PROMPT:
+  GitHub Username: [user enters their GitHub username]
+
+VALID USERNAMES TO TEST:
+  - akanaul          (owner, expires 2027)
+  - demo             (test user, expires 2025)
+
+CREATE NEW USER:
+  {
+    "username": {
+      "full_name": "Name",
+      "expires": "YYYY-MM-DDTHH:MM:SS",
+      "revoked": false
+    }
+  }
+
+REVOKE USER:
+  Change "revoked": false  →  "revoked": true
+
+EXPIRE USER:
+  Change "expires": "YYYY-MM-DDTHH:MM:SS"  →  "past date"
+
+DELETE USER:
+  Remove entire user block from gist
+
+
+================================================================================
+                    GITHUB INTEGRATION COMPLETE
+================================================================================
+
+Your authorization system now uses pure GitHub usernames for authentication.
+This provides complete integration with GitHub identity while maintaining
+simplicity and security.
+
+For more details: See GIST_SETUP.txt or CREATE_SECRET_GIST.txt
+
+================================================================================
