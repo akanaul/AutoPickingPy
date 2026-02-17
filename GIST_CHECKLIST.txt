@@ -66,23 +66,15 @@ File name: AUTHORIZED_USERS.json
 Content:
 
 {
+  "akanaul": {
+    "full_name": "Clebson Luan Alves da Silva",
+    "expires": "2027-12-31T23:59:59",
+    "revoked": false
+  },
   "demo": {
     "full_name": "Demo User",
-    "email": "demo@example.com",
     "expires": "2025-12-31T23:59:59",
-    "machine_id": null,
-    "revoked": false,
-    "created": "2026-02-17T10:00:00",
-    "purpose": "Demo/Test access"
-  },
-  "clebson": {
-    "full_name": "Clebson Luan Alves da Silva",
-    "email": "clebson@example.com",
-    "expires": "2027-12-31T23:59:59",
-    "machine_id": null,
-    "revoked": false,
-    "created": "2026-02-17T10:00:00",
-    "purpose": "Owner/Administrator"
+    "revoked": false
   }
 }
 

@@ -124,10 +124,10 @@ See LICENSE file for complete terms.
     
     def is_user_authorized(self, username: str, machine_id: str = None) -> tuple[bool, str]:
         """
-        Check if a user is authorized (LIVE GitHub check only).
+        Check if a user is authorized (LIVE GitHub gist check only).
         
         Args:
-            username: GitHub username or email
+            username: GitHub username (from gist keys)
             machine_id: Optional machine identifier for hardware-locked licenses
         
         Returns:
@@ -261,8 +261,8 @@ class LicenseDisplay:
 
 def get_authorized_username() -> str:
     """
-    Get username from environment variable or prompt user.
-    Priority: AUTOPICKING_USER env var > Windows USERNAME > prompt
+    Get GitHub username from environment variable or prompt user.
+    Priority: AUTOPICKING_USER env var > prompt
     """
     # Try environment variable first (for automated/headless execution)
     username = os.environ.get('AUTOPICKING_USER')
@@ -272,10 +272,10 @@ def get_authorized_username() -> str:
     
     # Prompt user with instructions
     print("\n" + "="*80)
-    print("Enter your GitHub username or registered email for authorization verification")
-    print("(This will be verified against the live GitHub authorization database)")
+    print("Enter your GitHub username for authorization verification")
+    print("(Must be registered in the GitHub gist authorization database)")
     print("="*80)
-    username = input("\nUsername/Email: ").strip()
+    username = input("\nGitHub Username: ").strip()
     return username
 
 

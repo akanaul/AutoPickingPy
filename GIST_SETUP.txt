@@ -22,23 +22,15 @@ This means:
 5. Paste this content:
 
 {
+  "akanaul": {
+    "full_name": "Clebson Luan Alves da Silva",
+    "expires": "2027-12-31T23:59:59",
+    "revoked": false
+  },
   "demo": {
     "full_name": "Demo User",
-    "email": "demo@example.com",
     "expires": "2025-12-31T23:59:59",
-    "machine_id": null,
-    "revoked": false,
-    "created": "2026-02-17T10:00:00",
-    "purpose": "Demo/Test access"
-  },
-  "clebson": {
-    "full_name": "Clebson Luan Alves da Silva",
-    "email": "clebson@example.com",
-    "expires": "2027-12-31T23:59:59",
-    "machine_id": null,
-    "revoked": false,
-    "created": "2026-02-17T10:00:00",
-    "purpose": "Owner/Administrator"
+    "revoked": false
   }
 }
 
@@ -100,17 +92,13 @@ To add, remove, or modify users:
 
 1. Go to your gist: https://gist.github.com/akanaul/[your-gist-id]
 2. Click "Edit" button (top right)
-3. Modify the JSON:
-   - Add new user:
+3. Modify the JSON (keys must be GitHub usernames):
+   - Add new user (use GitHub username):
      {
-       "newuser": {
-         "full_name": "New User",
-         "email": "new@example.com",
+       "newgithubuser": {
+         "full_name": "New User Full Name",
          "expires": "2027-12-31T23:59:59",
-         "machine_id": null,
-         "revoked": false,
-         "created": "2026-02-17T...",
-         "purpose": "Employee"
+         "revoked": false
        }
      }
    - Remove user: Delete the entire user block
@@ -221,19 +209,15 @@ Solution:
 
 SCENARIO 1: Onboard a new employee
 
-1. Get employee GitHub username or email
+1. Get employee GitHub username (e.g., johnsmith)
 2. Edit gist:
-   "newemployee": {
-     "full_name": "New Employee Name",
-     "email": "new@company.com",
+   "johnsmith": {
+     "full_name": "John Smith",
      "expires": "2027-12-31T23:59:59",
-     "machine_id": null,
-     "revoked": false,
-     "created": "2026-02-17T...",
-     "purpose": "Employee - Team member"
+     "revoked": false
    }
 3. Update gist (click "Update public gist")
-4. Employee logs in with "newemployee" username
+4. Employee logs in with their GitHub username: "johnsmith"
 5. Authorization granted (takes effect in ~30 seconds)
 
 
