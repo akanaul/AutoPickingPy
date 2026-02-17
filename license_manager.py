@@ -13,12 +13,11 @@ from pathlib import Path
 
 
 class LicenseManager:
-    """Manages software licensing with live GitHub verification (no offline mode)."""
+    """Manages software licensing with live GitHub gist verification (no local files)."""
     
-    # GitHub configuration
-    GITHUB_REPO = "akanaul/autopickingpy"
-    GITHUB_AUTHORIZED_FILE = "AUTHORIZED_USERS.json"
-    GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{GITHUB_AUTHORIZED_FILE}"
+    # GitHub gist configuration (update with your gist URL)
+    # Create a GitHub gist with AUTHORIZED_USERS.json content and paste the raw URL here
+    GITHUB_GIST_URL = "https://gist.githubusercontent.com/akanaul/YOUR_GIST_ID/raw/AUTHORIZED_USERS.json"
     
     # Audit logging (only records attempts, never stores auth data)
     AUDIT_DIR = Path(os.path.expanduser("~/.autopickingpy"))
@@ -87,7 +86,7 @@ See LICENSE file for complete terms.
     
     def fetch_authorized_users_from_github(self, retry=0) -> dict:
         """
-        Fetch the LIVE list of authorized users from GitHub.
+        Fetch the LIVE list of authorized users from GitHub gist.
         This CANNOT be cached - authorization is only valid if GitHub confirms it.
         
         Returns dict with user info, or None if GitHub cannot be reached.
@@ -95,7 +94,7 @@ See LICENSE file for complete terms.
         try:
             # Add timestamp to prevent any caching by intermediaries
             cache_bust = datetime.now().timestamp()
-            url = f"{self.GITHUB_RAW_URL}?t={cache_bust}"
+            url = f"{self.GITHUB_GIST_URL}?t={cache_bust}"
             
             response = requests.get(url, timeout=self.NETWORK_TIMEOUT)
             
@@ -104,7 +103,7 @@ See LICENSE file for complete terms.
                 self.fetch_timestamp = datetime.now()
                 return data
             else:
-                print(f"[ERROR] GitHub returned status {response.status_code}")
+                print(f"[ERROR] GitHub gist returned status {response.status_code}")
                 return None
                 
         except requests.exceptions.Timeout:
