@@ -15,14 +15,10 @@ from openpyxl.utils.datetime import from_excel
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
 
-# Import license manager
-try:
-    from license_manager import check_license_and_authorize
-except ImportError:
-    # Fallback if license_manager not available
-    def check_license_and_authorize():
-        print("WARNING: License manager not available. Running without license check.")
-        return True
+from openpyxl import load_workbook, Workbook
+from openpyxl.utils.datetime import from_excel
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
 
 try:
     from odf.opendocument import OpenDocumentSpreadsheet
@@ -574,18 +570,6 @@ if __name__ == "__main__":
         format="%(asctime)s [%(levelname)s] %(message)s",
         handlers=[logging.FileHandler(log_path, mode="w", encoding="utf-8"), logging.StreamHandler(sys.stdout)],
     )
-    
-    # Check license and authorization
-    print("\n" + "="*80)
-    print("AutoPickingPy - Licensed Software")
-    print("="*80 + "\n")
-    
-    if not check_license_and_authorize():
-        print("\n[FATAL] Authorization failed. Application will not run.")
-        print("Contact Clebson Luan Alves da Silva for licensing information.")
-        sys.exit(1)
-    
-    print("\n[SUCCESS] Authorization confirmed. Starting application...\n")
     
     try:
         main()
