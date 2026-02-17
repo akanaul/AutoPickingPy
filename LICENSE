@@ -1,204 +1,387 @@
-Common Clause License Condition v1.0
-
-The Software is provided to you by the Licensor under the License, as defined
-below, subject to the following condition.
-
-Without limiting other conditions in the License, the grant of rights under the
-License will not include, and the License does not grant to you, the right to
-Sell the Software.
-
-For purposes of the foregoing, "Sell" means practicing any or all of the rights
-granted to you under the License to provide to third parties, for a fee or other
-consideration (including without limitation fees for hosting or consulting/
-support services related to the Software), a product or service whose value
-derives, entirely or substantially, from the functionality of the Software. Any
-license notice or attribution required by the License must also include this
-Common Clause License Condition notice.
-
-Software: AutoPickingPy
-Licensor: Clebson Luan Alves da Silva
-
-Additional restrictions apply. See RESTRICTIONS.txt.
-If there is any conflict, the additional restrictions control the use of the
-Software. Governing law and venue are stated in RESTRICTIONS.txt.
-
---------------------------------------------------------------------------------
-
-                                 Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
-
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-
-   1. Definitions.
-
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
-
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
-
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
-
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
-
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
-
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
-
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
-
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
-
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
-
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
-
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
-
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
-
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
-
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
-
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
-
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
-
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
-
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
-
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
-
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
-
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
-
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
-
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
-
-   END OF TERMS AND CONDITIONS
+================================================================================
+                           PROPRIETARY SOFTWARE LICENSE
+                              AutoPickingPy
+================================================================================
 
 Copyright (c) 2026 Clebson Luan Alves da Silva
+All Rights Reserved.
+
+================================================================================
+1. PROPRIETARY NOTICE
+================================================================================
+
+This Software is the exclusive property of Clebson Luan Alves da Silva
+("Licensor"). All rights in and to the Software, including without limitation
+all intellectual property rights, are retained by the Licensor. No rights are
+granted except as expressly stated in this License.
+
+This Software is NOT open-source software. It is distributed as source-available
+proprietary software, and its use is strictly limited to authorized users under
+the terms and conditions of this License and any written Authorized User
+Agreement.
+
+================================================================================
+2. GRANT OF LICENSE
+================================================================================
+
+2.1 Limited License for Operational Use
+For operational, business, or authorized purposes: The Licensor grants to
+authorized users only a limited, non-exclusive, non-transferable, revocable
+license to use the Software solely as stated in an Authorized User Agreement
+signed by the Licensor.
+
+2.2 Personal Computer Exception (No Agreement Required)
+You MAY view and read the Software's source code on your personal computer
+SOLELY for personal testing, understanding, or audit purposes. This includes:
+- Installing on your personal computer
+- Reading and reviewing source code
+- Running on your personal device for personal testing only
+
+This exception does NOT grant any other rights (see Section 4).
+
+2.3 Personal Use Limitations
+The personal computer exception (Section 2.2) applies ONLY if ALL of:
+(a) The computer is personally owned by you, not provided by any employer;
+(b) Use is for personal testing/understanding only, not for business;
+(c) No company purpose, company data, or company benefit;
+(d) You keep the Software confidential and do not redistribute.
+
+2.4 No Rights Without Written Agreement for Business Use
+Unless you are an Authorized User identified in a written, signed agreement
+with the Licensor, you have NO RIGHTS to use the Software for any commercial,
+business, or operational purpose, or on any company computer or network.
+
+================================================================================
+3. HARD RESTRICTIONS (Always Prohibited)
+================================================================================
+
+You are ABSOLUTELY PROHIBITED from:
+
+(a) Modify, adapt, translate, or create derivative works of the Software;
+
+(b) Sublicense, redistribute, sell, rent, lease, transfer, or lend the Software
+    to any person or organization;
+
+(c) Publish, post, upload, publish, or make the Software or source code publicly
+    available without written permission;
+
+(d) Use the Software for commercial purposes, including:
+    - Selling products/services whose value derives from the Software;
+    - Using internally for company business operations;
+    - Using in hosted or managed services for others;
+    - Developing competing or similar products based on the Software;
+
+(e) Use the Software on any company-owned, company-provided, or
+    company-controlled computers, servers, networks, or devices (regardless of
+    employment status);
+
+(f) Reverse-engineer or decompile the Software with intent to develop competing
+    products or extract trade secrets for competitive advantage;
+
+(g) Remove or alter copyright notices, proprietary markings, or this License
+    from any copy.
+
+================================================================================
+4. RESTRICTIONS ON BUSINESS/OPERATIONAL USE (Requires Written Agreement)
+================================================================================
+
+Without a signed Authorized User Agreement, you may NOT:
+
+(a) Use the Software for any operational, business, or company purpose;
+
+(b) Use the Software if employed by, contracted to, or affiliated with:
+    - Pepsico, any subsidiary, or NSTECH group company
+    - OpenTech, any subsidiary, or NSTECH group company
+    - Any company competing with the Licensor
+    Exception: Personal use on personal computer for learning is allowed.
+    Exception: Employees can use on personal computer ONLY with written permission.
+
+(c) Share, copy (except one personal backup), or transfer the Software to others;
+
+(d) Analyze the source code for business development purposes;
+
+(e) Use source code to develop competing solutions.
+
+================================================================================
+5. WHAT SOURCE CODE VIEWING DOES NOT PERMIT
+================================================================================
+
+The exceptions allowing source code viewing (Section 2.2) do NOT grant rights to:
+
+(a) Modify, translate, adapt, or create derivatives of the code;
+
+(b) Use the Software for any business, commercial, or operational purpose;
+
+(c) Run the Software on company computers or business networks;
+
+(d) Analyze code for developing competing products;
+
+(e) Decompile or reverse-engineer for competitive advantage;
+
+(f) Share, redistribute, or publish the Software or source code;
+
+(g) Remove confidentiality obligations (Section 6.3);
+
+(h) Bypass any other term in this License;
+
+(i) Develop as a paid service;
+
+(j) Use on any company device or network.
+
+You acknowledge that:
+- Viewing source code does NOT grant intellectual property ownership or rights;
+- Viewing does NOT permit commercial use or development;
+- Personal computer testing is limited to evaluation, not operational use;
+- Confidentiality obligations apply to all source code viewers;
+- All other restrictions remain in full force.
+
+================================================================================
+6. AUTHORIZED USER AGREEMENT REQUIREMENT
+================================================================================
+
+6.1 Written Contract Required for Operational Use
+Any use of the Software for business, operational, or commercial purposes
+requires a written Authorized User Agreement signed by the Licensor.
+
+Exception: Personal computer viewing/testing (Section 2.2) does NOT require
+written agreement.
+
+6.2 No Agreement Needed For:
+- Viewing source code on your personal computer
+- Testing the Software on your personal computer
+- Understanding or auditing the code for personal learning
+- Security review for your own understanding
+
+All of these are subject to Section 4 (What source code viewing does not permit).
+
+6.3 Written Agreement Required For:
+- Any business or operational use
+- Any commercial use
+- Use on company computers/networks
+- Use by Pepsico/OpenTech/NSTECH employees for ANY work purpose
+- Use in any paid service or product
+
+6.4 Contract Contents
+An Authorized User Agreement must identify:
+- The authorized user(s) by name;
+- The specific permitted use and scope;
+- Whether the user is employed by restricted entities (Section 4(b));
+- Duration of authorization;
+- Confirmation that this License is accepted in full;
+- Any compensation or fees.
+
+6.5 Non-Transferable
+An Authorized User Agreement is personal to the named individual(s) only.
+It may not be shared, delegated, or used by anyone else.
+
+================================================================================
+7. INTELLECTUAL PROPERTY OWNERSHIP
+================================================================================
+
+7.1 Ownership
+The Software, including all source code, object code, algorithms, documentation,
+and any modifications or derivatives, remain the exclusive property of the
+Licensor at all times.
+
+7.2 Feedback
+Any feedback, suggestions, or improvements you provide to the Licensor become
+the property of the Licensor without obligation to you.
+
+7.3 Confidentiality and Disclosure Limits
+The Software and all information about it are confidential. You agree to keep
+the Software and its source code confidential and not to disclose them to third
+parties without written consent from the Licensor.
+
+Permitted disclosure (source code viewers only):
+- You MAY discuss GENERAL CONCEPTS you learned from the code
+- You MAY share YOUR OWN implementation or analysis (not the Software itself)
+- You MAY report security vulnerabilities privately to the Licensor
+
+Prohibited disclosure:
+- You may NOT publish or share the actual source code
+- You may NOT post code snippets publicly
+- You may NOT give copies to others
+- You may NOT use code as the basis for competing products
+- You may NOT redistribute the Software in any form
+
+================================================================================
+8. TERMINATION
+================================================================================
+
+8.1 Automatic Termination
+This License and any authorization to use the Software automatically terminate
+immediately upon:
+(a) Any material violation of the terms in this License;
+(b) Expiration of any Authorized User Agreement;
+(c) Termination notice in writing from the Licensor;
+(d) Change of employment status (if you become employed by restricted company);
+(e) Any attempt to sublicense, transfer, share, or redistribute the Software;
+(f) Any use of the Software in violation of Section 4.
+
+8.2 Effect of Termination
+Upon termination:
+- You must immediately cease ALL OPERATIONAL USE of the Software;
+- You must delete all working copies and operational installations;
+- You MAY keep ONE archived backup copy on your personal computer for disaster
+  recovery and historical purposes only (not for use or analysis);
+- You must certify in writing compliance within 30 days;
+- Confidentiality obligations (Section 7.3) remain indefinitely;
+- You must return or destroy printed documentation.
+
+8.3 No Refund
+Termination does not entitle you to any refund or compensation.
+
+================================================================================
+8. DISCLAIMER OF WARRANTIES
+================================================================================
+
+8.1 As-Is Provision
+The Software is provided "AS IS" without warranty of any kind, whether express,
+implied, or statutory, including but not limited to warranties of:
+- MERCHANTABILITY
+- FITNESS FOR A PARTICULAR PURPOSE
+- TITLE
+- NON-INFRINGEMENT
+- ACCURACY
+- COMPLETENESS
+- RELIABILITY
+
+8.2 No Support
+The Licensor is under no obligation to provide updates, fixes, support,
+maintenance, or technical assistance.
+
+================================================================================
+9. LIMITATION OF LIABILITY
+================================================================================
+
+9.1 No Responsibility
+In no event shall the Licensor be liable for:
+- Loss of data, profits, or revenue;
+- Business interruption;
+- Lost business opportunity;
+- Indirect, incidental, special, consequential, or punitive damages;
+- Any damages arising from use or inability to use the Software;
+
+even if the Licensor has been advised of the possibility of such damages.
+
+9.2 Liability Cap
+If, despite this limitation, a court holds the Licensor liable, liability shall
+be limited to the amount paid (if any) for the Software in the 12 months
+preceding the claim, or $0 if no payment was made.
+
+================================================================================
+10. INDEMNIFICATION
+================================================================================
+
+You agree to indemnify and hold harmless the Licensor from any claims, damages,
+liabilities, or expenses arising from:
+- Your use or misuse of the Software;
+- Your violation of this License;
+- Your infringement of third-party rights;
+- Your disclosure of the Software to unauthorized parties.
+
+================================================================================
+11. CONFIDENTIALITY AND TRADE SECRETS
+================================================================================
+
+11.1 Trade Secrets
+The Software contains trade secrets belonging exclusively to the Licensor.
+Unauthorized disclosure may cause irreparable harm.
+
+11.2 Confidentiality Obligation
+You agree to:
+- Keep the Software confidential;
+- Use reasonable security measures to prevent disclosure;
+- Limit access to those with a genuine need to know;
+- Not publish or reverse-engineer the Software.
+
+11.3 Legal Remedies
+The Licensor reserves the right to seek injunctive relief, damages, and other
+legal remedies for breach of this provision.
+
+================================================================================
+12. GOVERNING LAW AND DISPUTE RESOLUTION
+================================================================================
+
+12.1 Applicable Law
+This License is governed by the laws of the Federative Republic of Brazil,
+without regard to conflicts of law principles.
+
+12.2 Jurisdiction and Venue
+You irrevocably consent to the exclusive jurisdiction of the courts of the
+comarca of Itu, São Paulo, Brazil. You waive any objection to venue and any
+claim of inconvenient forum.
+
+12.3 Attorneys' Fees
+The prevailing party in any dispute shall be entitled to recover reasonable
+attorneys' fees and costs.
+
+================================================================================
+13. SEVERABILITY
+================================================================================
+
+If any provision of this License is held to be invalid, illegal, or
+unenforceable by a court of competent jurisdiction, that provision shall be
+reformed to the minimum extent necessary to make it valid, or if reformation
+is impossible, severed entirely. All remaining provisions shall remain in full
+force and effect.
+
+================================================================================
+14. NO WAIVER
+================================================================================
+
+Failure by the Licensor to enforce any provision of this License shall not
+constitute a waiver of that provision or any other provision. Failure to act
+does not diminish the Licensor's rights.
+
+================================================================================
+15. AMENDMENTS AND ENTIRE AGREEMENT
+================================================================================
+
+15.1 Entire Agreement
+This License, together with any signed Authorized User Agreement, constitutes
+the entire agreement between you and the Licensor regarding the Software.
+
+15.2 Amendments
+No modification, amendment, or exception to this License is valid unless made
+in a written document signed by the Licensor.
+
+15.3 No Third-Party Beneficiaries
+No third party has any rights or claims under this License.
+
+================================================================================
+16. ACCEPTANCE AND BINDING EFFECT
+================================================================================
+
+By using, viewing, running, accessing, or possessing the Software, you
+acknowledge that:
+
+For personal computer testing/viewing (Section 2.2):
+1. You have read and understood this License in full;
+2. You will use the Software ONLY on your personal computer for personal
+   testing or learning;
+3. You will not use the Software for any business, company, or commercial purpose;
+4. You will keep the Software confidential and not redistribute it;
+5. You are bound by all restrictions in Sections 3-4.
+
+For operational/business use:
+1. You are an Authorized User under a written Authorized User Agreement;
+2. You have received and read the signed agreement;
+3. You have read and accepted this entire License;
+4. You will use the Software ONLY as permitted in your written agreement;
+5. You are NOT employed by Pepsico/OpenTech/NSTECH (unless exempted in writing);
+6. You understand violations will terminate all rights immediately.
+
+If you cannot comply with these terms:
+- For personal computer use: Do not install or view the Software
+- For operational use: Do not use without a signed written agreement first
+
+If you do not agree, you must immediately delete the Software and certify
+deletion to the Licensor in writing.
+
+================================================================================
+
+Copyright (c) 2026 Clebson Luan Alves da Silva
+All Rights Reserved
+
+For licensing inquiries or authorization agreements, contact the Licensor.

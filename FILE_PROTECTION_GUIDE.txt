@@ -1,0 +1,330 @@
+================================================================================
+                    FILE PROTECTION SETUP GUIDE
+              Securing AUTHORIZED_USERS.json from Unauthorized Edits
+================================================================================
+
+This guide explains how to protect AUTHORIZED_USERS.json from unauthorized
+personnel making changes to the authorization database.
+
+Two-tier approach:
+1. GitHub Access Control (primary)
+2. File Integrity Verification (secondary)
+
+
+================================================================================
+METHOD 1: GITHUB BRANCH PROTECTION (RECOMMENDED)
+================================================================================
+
+This prevents anyone from editing AUTHORIZED_USERS.json without approval.
+
+STEP 1: Create a CODEOWNERS file
+──────────────────────────────────
+
+1. In your GitHub repo, create file: .github/CODEOWNERS
+   (Create .github folder if it doesn't exist)
+
+2. Add this content:
+
+   # License database - must be approved by admin
+   AUTHORIZED_USERS.json  @yourusername
+
+   Replace @yourusername with your GitHub username
+
+3. Commit and push to main branch:
+   git add .github/CODEOWNERS
+   git commit -m "Add code owners for license authorization"
+   git push origin main
+
+
+STEP 2: Enable Branch Protection
+─────────────────────────────────
+
+1. Go to your GitHub repository
+2. Click Settings > Branches
+3. Click "Add rule" under Branch protection rules
+4. Enter branch name: main
+5. Check these boxes:
+   ✓ Require a pull request before merging
+   ✓ Require approvals (set to 1 or more)
+   ✓ Require code owner reviews before merging
+   ✓ Require status checks to pass before merging
+   ✓ Dismiss stale pull request approvals
+
+6. Optionally:
+   ✓ Require signed commits (extra security)
+
+7. Click "Create"
+
+RESULT:
+- Anyone can PROPOSE changes via Pull Request
+- Only you (@yourusername) can APPROVE changes
+- Changes to AUTHORIZED_USERS.json require your explicit approval
+- Takes effect immediately after merge
+
+
+================================================================================
+METHOD 2: REPOSITORY PERMISSIONS (ADDITIONAL LAYER)
+================================================================================
+
+Restrict who can push to main branch entirely.
+
+STEP 1: Set Repository Role Permissions
+────────────────────────────────────────
+
+1. Go to Settings > Access > Collaborators and teams
+2. For each team/user:
+   - Owners: Full access (can push, approve, protect branches)
+   - Maintainers: Can push, but not change settings
+   - Write: Can push directly (not recommended for license data)
+   - Triage: Can review PRs, not push
+   - Read: View only
+
+3. For license management, assign:
+   - You: Owner or Maintainer
+   - Reviewers: Maintainer (to approve PRs)
+   - Everyone else: Read or Triage (view-only)
+
+
+STEP 2: Require Pull Requests for All Changes
+───────────────────────────────────────────────
+
+Even Maintainers cannot push directly to main:
+
+1. Settings > Branches > Branch protection rule for "main"
+2. Check: "Require a pull request before merging"
+3. Check: "Require approvals" (1+ required)
+4. Check: "Require code owner reviews"
+
+Now ALL changes, even from Maintainers, must go through PR + approval
+
+
+================================================================================
+METHOD 3: FILE INTEGRITY VERIFICATION (BACKUP SECURITY)
+================================================================================
+
+Add a checksum to detect if AUTHORIZED_USERS.json was tampered with.
+This is a secondary layer - GitHub protection is primary.
+
+STEP 1: Generate file signature
+────────────────────────────────
+
+In PowerShell, calculate SHA256 of AUTHORIZED_USERS.json:
+
+  $file = "c:\Users\09493608\Desktop\AutoPickingPy\AUTHORIZED_USERS.json"
+  $hash = (Get-FileHash $file -Algorithm SHA256).Hash
+  Write-Host "SHA256: $hash"
+
+Note this hash value.
+
+
+STEP 2: Create AUTHORIZED_USERS.json.sig file
+──────────────────────────────────────────────
+
+Create a new file: AUTHORIZED_USERS.json.sig with content:
+
+  {
+    "version": 2,
+    "sha256": "PASTE_THE_HASH_HERE",
+    "created": "2026-02-17T10:00:00",
+    "admin": "yourname"
+  }
+
+Example:
+  {
+    "version": 2,
+    "sha256": "abc123def456789abc123def456789abc123def456789abc123def456789abc123",
+    "created": "2026-02-17T10:00:00",
+    "admin": "clebson"
+  }
+
+3. Commit and push both files to GitHub
+
+
+STEP 3: Add Verification to license_manager.py
+───────────────────────────────────────────────
+
+The license manager can verify the signature before using AUTHORIZED_USERS.json.
+
+This detects tampering, though GitHub protection is the real safeguard.
+
+
+================================================================================
+                        RECOMMENDED SETUP
+================================================================================
+
+For small team (you + 1-2 others):
+
+1. ✓ Create .github/CODEOWNERS file (identifies you as owner)
+2. ✓ Enable branch protection on main branch
+3. ✓ Require 1 code owner review (you)
+4. ✓ Set collaborator roles appropriately
+5. ✓ Optionally add file signature as backup check
+
+Result:
+- Anyone can suggest changes via PR
+- Only you can approve and merge
+- No one can force-push or bypass protection
+- Audit trail in GitHub shows who changed what
+
+
+================================================================================
+                    WORKFLOW FOR ADDING USERS
+================================================================================
+
+When someone requests authorization:
+
+1. They create a Pull Request editing AUTHORIZED_USERS.json:
+   - Adds their entry with desired expiry date
+   - Describes purpose/justification
+
+2. You review the PR:
+   - Check if this person should have access
+   - Adjust expiry date if needed
+   - Add comments if necessary
+
+3. You approve and merge:
+   - GitHub requires your approval (code owner)
+   - Changes take effect immediately
+   - Full audit trail recorded
+
+4. User is authorized:
+   - Next login attempt fetches from GitHub
+   - User is granted access within ~30 seconds
+
+
+================================================================================
+                    WORKFLOW FOR REVOKING ACCESS
+================================================================================
+
+When someone should lose access:
+
+1. You edit AUTHORIZED_USERS.json:
+   Option A: Set "revoked": true
+   Option B: Set "expires" to current date/time
+
+2. Commit directly (or via PR if you want review):
+   git commit -am "Revoke user XYZ - reason noted"
+   git push origin main
+
+3. Revocation takes effect immediately:
+   - User denied on next login attempt
+   - No waiting for expiry or cache refresh
+   - Completely effective if GitHub protection is enabled
+
+
+================================================================================
+                      TESTING YOUR SETUP
+================================================================================
+
+1. Have a team member try to edit AUTHORIZED_USERS.json directly:
+   - GitHub should block direct push to main
+   - Message: "You cannot push to main; use Pull Requests"
+
+2. Have them open a Pull Request instead:
+   - PR should be created successfully
+   - You receive notification to review
+   - They cannot merge without your approval
+
+3. You review and approve:
+   - Click "Approve" on the PR
+   - Click "Merge pull request"
+   - Changes go live
+
+4. Verify changes took effect:
+   - Check authorization_audit.log for access attempts
+   - Next user login should use updated data
+
+
+================================================================================
+                    GITHUB ACTIONS (ADVANCED)
+================================================================================
+
+Optional: Set up automatic checks when AUTHORIZED_USERS.json changes:
+
+1. Validates JSON syntax
+2. Checks for required fields
+3. Prevents typos that would break authorization
+
+Create file: .github/workflows/validate-auth.yml
+
+name: Validate Authorization File
+on:
+  pull_request:
+    paths:
+      - AUTHORIZED_USERS.json
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate JSON syntax
+        run: python -m json.tool AUTHORIZED_USERS.json > /dev/null
+      - name: Check required fields
+        run: |
+          python -c "
+          import json
+          with open('AUTHORIZED_USERS.json') as f:
+              data = json.load(f)
+          required = ['full_name', 'email', 'expires', 'machine_id', 'revoked']
+          for user, info in data.items():
+              for field in required:
+                  assert field in info, f'User {user} missing field {field}'
+          "
+
+This automatically checks PRS before merging.
+
+
+================================================================================
+                        EMERGENCY ACCESS
+================================================================================
+
+What if you're locked out?
+
+If you accidentally block yourself:
+
+1. Use a different GitHub admin account
+2. Go to Settings > Branches > Edit protection rule
+3. Temporarily disable "Require approvals"
+4. Disable CODEOWNERS requirement
+5. Make fix
+6. Re-enable protections
+
+Or contact GitHub support if account compromised.
+
+
+================================================================================
+                        SECURITY SUMMARY
+================================================================================
+
+Protection Layers:
+1. GitHub authentication (username/password or SSH)
+2. Branch protection rules (require PR + review)
+3. CODEOWNERS (you must approve)
+4. Audit trail (who changed what, when)
+5. File signature (detect tampering via checksum)
+
+Result:
+✓ Unauthorized personnel cannot edit AUTHORIZED_USERS.json
+✓ All changes require your explicit approval
+✓ Audit trail completely traceable
+✓ Revocations take effect immediately
+✓ No one can sneak in unauthorized users
+
+
+================================================================================
+                    FOR MORE HELP
+================================================================================
+
+- GitHub Branch Protection docs:
+  https://docs.github.com/en/repositories/configuring-branches-and-merges-when-pulling-requests/managing-rulesets/managing-rulesets-for-a-repository
+
+- CODEOWNERS docs:
+  https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+- GitHub Actions docs:
+  https://docs.github.com/en/actions
+
+Questions? Contact: Clebson Luan Alves da Silva
+
+================================================================================

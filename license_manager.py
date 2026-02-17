@@ -1,0 +1,343 @@
+"""
+AutoPickingPy License and User Authorization Module
+SECURITY MODEL: All authorization requires live GitHub verification - NO LOCAL CACHE
+"""
+
+import os
+import sys
+import json
+import hashlib
+import requests
+from datetime import datetime, timedelta
+from pathlib import Path
+
+
+class LicenseManager:
+    """Manages software licensing with live GitHub verification (no offline mode)."""
+    
+    # GitHub configuration
+    GITHUB_REPO = "YOUR_GITHUB_USERNAME/AutoPickingPy"  # CHANGE THIS
+    GITHUB_AUTHORIZED_FILE = "AUTHORIZED_USERS.json"
+    GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO}/main/{GITHUB_AUTHORIZED_FILE}"
+    
+    # Audit logging (only records attempts, never stores auth data)
+    AUDIT_DIR = Path(os.path.expanduser("~/.autopickingpy"))
+    AUDIT_LOG = AUDIT_DIR / "authorization_audit.log"
+    
+    # Network settings
+    NETWORK_TIMEOUT = 10  # seconds
+    RETRY_ATTEMPTS = 3
+    
+    def __init__(self):
+        """Initialize the license manager."""
+        self.audit_dir.mkdir(parents=True, exist_ok=True)
+        self.authorized_users = None
+        self.fetch_timestamp = None
+        
+    @property
+    def audit_dir(self):
+        return self.AUDIT_DIR
+    
+    def load_license_header(self):
+        """Display license notice to user."""
+        header = """
+================================================================================
+                         AutoPickingPy - Licensed Software
+================================================================================
+This software is proprietary and distributed under a "All Rights Reserved" license.
+Authorization requires live verification via GitHub - offline use is not permitted.
+
+For licensing and authorization, contact: Clebson Luan Alves da Silva
+
+See LICENSE file for complete terms.
+================================================================================
+"""
+        print(header)
+    
+    def get_system_identifier(self) -> str:
+        """Generate a unique system identifier for this computer."""
+        try:
+            import uuid
+            mac = uuid.UUID(int=uuid.getnode()).hex[-12:]
+            hostname = os.environ.get('COMPUTERNAME', 'UNKNOWN')
+            system_id = f"{hostname}_{mac}".lower()
+            return hashlib.sha256(system_id.encode()).hexdigest()[:16]
+        except Exception:
+            return "UNKNOWN"
+    
+    def log_authorization_attempt(self, username: str, status: str, reason: str = ""):
+        """Log authorization attempt for audit trail (not auth data)."""
+        try:
+            timestamp = datetime.now().isoformat()
+            system_id = self.get_system_identifier()
+            
+            log_entry = {
+                "timestamp": timestamp,
+                "username": username,
+                "status": status,
+                "reason": reason,
+                "system_id": system_id,
+                "github_verified": False  # Will be updated based on result
+            }
+            
+            with open(self.AUDIT_LOG, 'a') as f:
+                f.write(json.dumps(log_entry) + "\n")
+        except Exception as e:
+            print(f"[WARNING] Could not write audit log: {e}")
+    
+    def fetch_authorized_users_from_github(self, retry=0) -> dict:
+        """
+        Fetch the LIVE list of authorized users from GitHub.
+        This CANNOT be cached - authorization is only valid if GitHub confirms it.
+        
+        Returns dict with user info, or None if GitHub cannot be reached.
+        """
+        try:
+            # Add timestamp to prevent any caching by intermediaries
+            cache_bust = datetime.now().timestamp()
+            url = f"{self.GITHUB_RAW_URL}?t={cache_bust}"
+            
+            response = requests.get(url, timeout=self.NETWORK_TIMEOUT)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.fetch_timestamp = datetime.now()
+                return data
+            else:
+                print(f"[ERROR] GitHub returned status {response.status_code}")
+                return None
+                
+        except requests.exceptions.Timeout:
+            if retry < self.RETRY_ATTEMPTS:
+                print(f"[INFO] Timeout, retrying... (attempt {retry + 1}/{self.RETRY_ATTEMPTS})")
+                return self.fetch_authorized_users_from_github(retry + 1)
+            print("[ERROR] Network timeout - GitHub is unreachable")
+            return None
+        except requests.exceptions.ConnectionError:
+            if retry < self.RETRY_ATTEMPTS:
+                print(f"[INFO] Connection failed, retrying... (attempt {retry + 1}/{self.RETRY_ATTEMPTS})")
+                return self.fetch_authorized_users_from_github(retry + 1)
+            print("[ERROR] Cannot connect to GitHub - authorization requires internet connection")
+            return None
+        except Exception as e:
+            print(f"[ERROR] Failed to fetch authorization: {e}")
+            return None
+    
+    def is_user_authorized(self, username: str, machine_id: str = None) -> tuple[bool, str]:
+        """
+        Check if a user is authorized (LIVE GitHub check only).
+        
+        Args:
+            username: GitHub username or email
+            machine_id: Optional machine identifier for hardware-locked licenses
+        
+        Returns:
+            (authorized: bool, reason: str)
+        """
+        if machine_id is None:
+            machine_id = self.get_system_identifier()
+        
+        print(f"\n[INFO] Verifying authorization with GitHub...")
+        
+        # ALWAYS fetch fresh data from GitHub - no cache allowed
+        users = self.fetch_authorized_users_from_github()
+        
+        if users is None:
+            reason = "GitHub unreachable - cannot verify authorization"
+            print(f"[CRITICAL] {reason}")
+            return False, reason
+        
+        if username not in users:
+            reason = f"User '{username}' not found in authorization database"
+            print(f"[ERROR] {reason}")
+            return False, reason
+        
+        user_data = users[username]
+        
+        # Check if revoked (highest priority)
+        if user_data.get('revoked', False):
+            reason = "License has been REVOKED"
+            print(f"[ERROR] {reason}")
+            return False, reason
+        
+        # Check expiration
+        if 'expires' in user_data:
+            try:
+                expiry = datetime.fromisoformat(user_data['expires'])
+                if datetime.now() > expiry:
+                    reason = f"Authorization expired on {user_data['expires']}"
+                    print(f"[ERROR] {reason}")
+                    return False, reason
+            except ValueError:
+                reason = "Invalid expiration date in authorization data"
+                print(f"[ERROR] {reason}")
+                return False, reason
+        
+        # Check machine ID if hardware-locked
+        if 'machine_id' in user_data and user_data['machine_id']:
+            if user_data['machine_id'] != machine_id:
+                reason = f"License is locked to different machine (current: {machine_id[:8]}...)"
+                print(f"[ERROR] {reason}")
+                return False, reason
+        
+        # All checks passed
+        reason = "GitHub verified authorization confirmed"
+        return True, reason
+    
+    def authorize(self, username: str, machine_id: str = None) -> bool:
+        """
+        Authorize a user (LIVE GitHub verification required).
+        
+        Args:
+            username: GitHub username or email
+            machine_id: Optional machine ID for hardware lock
+            
+        Returns:
+            True if authorized successfully, False otherwise
+        """
+        print(f"\n[INFO] Authorizing user: {username}")
+        print(f"[INFO] System ID: {self.get_system_identifier()[:8]}...")
+        
+        authorized, reason = self.is_user_authorized(username, machine_id)
+        
+        if authorized:
+            print(f"\n[SUCCESS] ✓ Authorization GRANTED")
+            print(f"[INFO] {reason}")
+            self.log_authorization_attempt(username, "GRANTED", reason)
+            return True
+        else:
+            print(f"\n[ERROR] ✗ Authorization DENIED")
+            print(f"[ERROR] Reason: {reason}")
+            print(f"\n[INFO] Contact Clebson Luan Alves da Silva for licensing")
+            self.log_authorization_attempt(username, "DENIED", reason)
+            return False
+    
+    def get_authorization_info(self, username: str) -> dict:
+        """
+        Get authorization details for a user (requires live GitHub check).
+        """
+        users = self.fetch_authorized_users_from_github()
+        if users:
+            return users.get(username, {})
+        return {}
+
+
+class LicenseDisplay:
+    """Display license and authorization information."""
+    
+    @staticmethod
+    def show_license():
+        """Display the full license to the user."""
+        license_path = Path(__file__).parent / "LICENSE"
+        if license_path.exists():
+            with open(license_path, 'r') as f:
+                print(f.read())
+        else:
+            print("LICENSE file not found")
+    
+    @staticmethod
+    def show_user_info(license_manager: LicenseManager, username: str):
+        """Display user's authorization details."""
+        info = license_manager.get_authorization_info(username)
+        if not info:
+            print(f"No authorization found for {username}")
+            return
+        
+        print(f"\n=== Authorization Details for {username} ===")
+        
+        # Display all info except sensitive fields
+        for key, value in info.items():
+            if key == 'machine_id':
+                if value:
+                    print(f"  Hardware Lock: {value[:8]}...")
+                else:
+                    print(f"  Hardware Lock: Not locked (any machine)")
+            elif key not in ['revoked']:  # Hide internal fields
+                display_key = key.replace('_', ' ').title()
+                print(f"  {display_key}: {value}")
+        
+        if info.get('revoked'):
+            print(f"  STATUS: ⚠ REVOKED")
+
+
+def get_authorized_username() -> str:
+    """
+    Get username from environment variable or prompt user.
+    Priority: AUTOPICKING_USER env var > Windows USERNAME > prompt
+    """
+    # Try environment variable first (for automated/headless execution)
+    username = os.environ.get('AUTOPICKING_USER')
+    if username:
+        print(f"[INFO] Using username from AUTOPICKING_USER environment variable")
+        return username
+    
+    # Prompt user with instructions
+    print("\n" + "="*80)
+    print("Enter your GitHub username or registered email for authorization verification")
+    print("(This will be verified against the live GitHub authorization database)")
+    print("="*80)
+    username = input("\nUsername/Email: ").strip()
+    return username
+
+
+def check_license_and_authorize() -> bool:
+    """
+    Main function to check license and authorize user.
+    Requires live GitHub connection - no offline mode allowed.
+    
+    Call this at the start of your main application.
+    
+    Returns:
+        True if user is authorized, False otherwise
+    """
+    try:
+        manager = LicenseManager()
+        manager.load_license_header()
+        
+        # Get username
+        username = get_authorized_username()
+        if not username:
+            print("[ERROR] No username provided")
+            manager.log_authorization_attempt("UNKNOWN", "DENIED", "No username provided")
+            return False
+        
+        # Authorize (LIVE GitHub check)
+        return manager.authorize(username)
+        
+    except KeyboardInterrupt:
+        print("\n[INFO] Authorization cancelled by user")
+        return False
+    except Exception as e:
+        print(f"\n[CRITICAL] Unexpected error during authorization: {e}")
+        return False
+
+
+if __name__ == "__main__":
+    # Test the license manager
+    print("AutoPickingPy License Manager - Test Mode")
+    print("(All authorization requires live GitHub verification)\n")
+    
+    manager = LicenseManager()
+    manager.load_license_header()
+    
+    # Test with sample username
+    test_user = input("\nEnter username to check: ").strip() or "demo"
+    
+    print(f"\nChecking authorization for: {test_user}")
+    authorized, reason = manager.is_user_authorized(test_user)
+    
+    if authorized:
+        info = manager.get_authorization_info(test_user)
+        print(f"\n✓ Authorization info for {test_user}:")
+        print(json.dumps(info, indent=2))
+    else:
+        print(f"\n✗ Authorization check failed: {reason}")
+    
+    # Show audit log
+    print(f"\nAudit log location: {manager.AUDIT_LOG}")
+    if manager.AUDIT_LOG.exists():
+        print(f"Recent audit entries:")
+        with open(manager.AUDIT_LOG, 'r') as f:
+            entries = f.readlines()[-5:]  # Last 5 entries
+            for entry in entries:
+                print(f"  {entry.rstrip()}")

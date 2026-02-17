@@ -1,0 +1,309 @@
+================================================================================
+                     AutoPickingPy - Security Model v2
+                   LIVE GITHUB VERIFICATION (No Local Cache)
+================================================================================
+
+OVERVIEW:
+This document explains the security model for AutoPickingPy license authorization.
+Version 2 removes all local caching to eliminate cache-based loopholes.
+
+CRITICAL CHANGE:
+- BEFORE (v1): Cached authorization data locally for 24 hours
+  VULNERABILITY: Users could modify cache file or extend expiry
+  
+- NOW (v2): All authorization ALWAYS via live GitHub verification
+  SECURITY: No local cache = no offline modification possible
+
+
+================================================================================
+                            AUTHORIZATION FLOW
+================================================================================
+
+STARTUP:
+  1. Application displays license header
+  2. Requests user to provide GitHub username or registered email
+  3. Source: Environment variable (AUTOPICKING_USER) or user prompt
+  
+VERIFICATION (ALWAYS ONLINE):
+  1. License manager connects to GitHub
+  2. Fetches AUTHORIZED_USERS.json from: https://raw.githubusercontent.com/{repo}/main/AUTHORIZED_USERS.json
+  3. Cache-busting: Adds timestamp parameter (?t=...) to prevent HTTP caching
+  4. Retry logic: Up to 3 attempts on timeout/connection error
+  5. Validation checks (in order):
+     a. Is user in database? (if not → DENIED)
+     b. Is license REVOKED? (if yes → DENIED immediately)
+     c. Is license EXPIRED? (if yes → DENIED)
+     d. Is machine_id locked? (if yes and different → DENIED)
+     e. All checks pass → GRANTED
+  
+RESULT:
+  - GRANTED: User can run application
+  - DENIED: Application exits (sys.exit(1))
+  - NETWORK ERROR: No fallback to cache; exit with error message
+
+
+================================================================================
+                         SECURITY ADVANTAGES
+================================================================================
+
+1. NO LOCAL VULNERABILITIES:
+   - No cached auth files to modify
+   - No expiry dates to extend
+   - No revocation data to fake
+   - No machine IDs to spoof (hardware locked)
+
+2. ALWAYS CURRENT:
+   - Authorization checked against LIVE GitHub data
+   - Revocations take effect IMMEDIATELY
+   - No delay from cache expiry (was 24 hours before)
+   - User updates appear instantly
+
+3. CENTRALIZED CONTROL:
+   - GitHub repository is single source of truth
+   - Edit AUTHORIZED_USERS.json once, affects all instances
+   - No local config files to manage on client machines
+   - Audit trail in ~/.autopickingpy/authorization_audit.log (read-only)
+
+4. NETWORK INTEGRITY:
+   - GitHub uses HTTPS/SSL (encrypted transmission)
+   - Cache-busting prevents HTTP proxy caching
+   - Retry logic handles temporary network issues
+   - Clear error messages if GitHub cannot be reached
+
+5. AUDIT TRAIL:
+   - Location: ~/.autopickingpy/authorization_audit.log
+   - Records: Timestamp, username, status (GRANTED/DENIED), reason
+   - NEVER stores auth data, only access attempts
+   - Helps track authorization issues
+
+
+================================================================================
+                          TRADE-OFFS (INTENTIONAL)
+================================================================================
+
+REQUIREMENT: Internet connection (no offline mode)
+RATIONALE: Removing local cache eliminates loopholes
+IMPACT: Must have GitHub reachable to use software
+MITIGATION: Add OFFLINE_MODE in future if needed (with additional security)
+
+TIMEOUT: 10 seconds per attempt, up to 3 retries
+RATIONALE: Quick feedback while still handling slow networks
+IMPACT: Max 30 seconds to fail if GitHub unreachable
+SOLUTION: Check network connection before starting app
+
+
+================================================================================
+                       GITHUB REPOSITORY STRUCTURE
+================================================================================
+
+Required in GitHub repository (main branch):
+
+  AUTHORIZED_USERS.json:
+  {
+    "username": {
+      "full_name": "User Full Name",
+      "email": "user@example.com",
+      "expires": "2026-12-31T23:59:59",
+      "machine_id": null,                    # or "hardware_id_hash" for locked
+      "revoked": false,                      # Set to true to revoke instantly
+      "created": "2026-02-17T10:00:00",
+      "purpose": "Developer access"
+    }
+  }
+
+URL format recognized by license_manager.py:
+  https://raw.githubusercontent.com/{GITHUB_REPO}/main/AUTHORIZED_USERS.json
+
+
+================================================================================
+                        REVOCATION WORKFLOW
+================================================================================
+
+To revoke a user immediately:
+
+  1. Edit AUTHORIZED_USERS.json in your GitHub repository
+  2. Set "revoked": true for the user
+  3. Commit and push to main branch
+  4. Within 30 seconds (after next auth attempt), user is denied
+  5. No waiting for cache expiry
+  
+
+Example:
+  BEFORE: "demo": { "revoked": false, ...}
+  AFTER:  "demo": { "revoked": true, ...}
+  
+  Result: All running instances will deny "demo" on next login attempt
+
+
+================================================================================
+                      HARDWARE LOCKING (OPTIONAL)
+================================================================================
+
+For enhanced security, lock licenses to specific machines:
+
+SETUP:
+  1. Get system ID: Run license_manager.py in test mode, see "System ID:"
+  2. Copy the 16-character hash (e.g., "abc123def456789")
+  3. Add to AUTHORIZED_USERS.json:
+     "username": {
+       "machine_id": "abc123def456789",
+       ...
+     }
+
+EFFECT:
+  - License only works on that specific computer
+  - Different hardware gets DENIED even with correct username
+  - Portable option: Set "machine_id": null (works on any machine)
+
+
+================================================================================
+                          ENVIRONMENT VARIABLES
+================================================================================
+
+AUTOPICKING_USER:
+  Purpose: Automated/headless authorization without user prompt
+  Example: set AUTOPICKING_USER=myusername
+  Usage: Run app in scripts or scheduled tasks with automatic auth
+  Security: Only use in trusted environments
+
+
+================================================================================
+                      NETWORK REQUIREMENTS
+================================================================================
+
+REQUIRED:
+  - Outbound HTTPS access to GitHub (github.com, raw.githubusercontent.com)
+  - Port 443 (standard HTTPS)
+  - DNS resolution for github.com
+
+OPTIONAL (for enhanced security):
+  - Consider VPN if on untrusted networks
+  - GitHub Enterprise option for private networks
+
+NO REQUIREMENTS:
+  - PyPI or any package repositories
+  - Company servers or VPNs
+  - GitHub account for end-users (read-only access)
+
+
+================================================================================
+                        AUDIT LOG DETAILS
+================================================================================
+
+Location: ~/.autopickingpy/authorization_audit.log
+Format: JSON, one entry per line
+
+Example entry:
+{
+  "timestamp": "2026-02-17T14:30:45.123456",
+  "username": "demo",
+  "status": "GRANTED",
+  "reason": "GitHub verified authorization confirmed",
+  "system_id": "abc123def456789",
+  "github_verified": false
+}
+
+Fields:
+  - timestamp: ISO format datetime of auth attempt
+  - username: Who tried to authorize
+  - status: "GRANTED" or "DENIED"
+  - reason: Why (expiry, revoked, not found, etc.)
+  - system_id: Hardware identifier (16 chars)
+  - github_verified: Always false (reserved for future features)
+
+ANALYSIS:
+  - Monitor for repeated DENIED attempts (potential attack)
+  - Verify all GRANTEDs match authorized users
+  - Check timestamps for unusual access patterns
+
+
+================================================================================
+                      COMPARISON WITH V1 (BEFORE)
+================================================================================
+
+Feature                     V1 (Local Cache)       V2 (Live GitHub)
+────────────────────────────────────────────────────────────────────
+Cache file location         ~/.autopickingpy/      None (audit log only)
+Cache duration              24 hours               N/A (real-time)
+Modification vulnerability  YES (JSON file edit)   NO (GitHub-based)
+Revocation speed           24 hours wait           Immediate (seconds)
+Offline capability         YES                    NO
+Network requirement        First launch only      Every launch
+Update frequency           Once per 24 hours      Real-time
+Loopholes                  File system access    None (no local state)
+Audit trail                None                  Full (per access)
+
+
+================================================================================
+                         TESTING MANUALLY
+================================================================================
+
+1. Test Live Verification:
+   python license_manager.py
+   [Enter username to check]
+   
+   Should show: Authorization info from live GitHub
+   Should have: ✓ or ✗ Status
+
+2. Test Revocation (Immediate):
+   a. Edit AUTHORIZED_USERS.json in your GitHub repo
+   b. Set "revoked": true for a user
+   c. Push to main branch
+   d. Run: python license_manager.py
+   e. Expected: ✗ Authorization DENIED (License has been REVOKED)
+
+3. Test Expiration:
+   a. Edit AUTHORIZED_USERS.json in GitHub
+   b. Change "expires" to past date (e.g., "2020-01-01T00:00:00")
+   c. Push to main branch
+   d. Run: python license_manager.py
+   e. Expected: ✗ Authorization DENIED (Authorization expired)
+
+4. Test Network Failure:
+   a. Disconnect from internet / block GitHub
+   b. Run: python gerar_solicitacao_pickings.py
+   c. Expected: [ERROR] Cannot connect to GitHub (after 3 retries)
+   d. Expected: Authorization DENIED, application exits
+
+
+================================================================================
+                         FUTURE ENHANCEMENTS
+================================================================================
+
+Potential improvements (not yet implemented):
+
+1. OFFLINE MODE WITH VERIFICATION:
+   - Use signed tokens from GitHub (JWT or similar)
+   - Allow offline use for X hours with verified token
+   - Higher security than simple caching
+
+2. GITHUB API INTEGRATION:
+   - Authenticate with GitHub token for better rate limiting
+   - Use /repos API for guaranteed integrity
+   - Enterprise GitHub support
+
+3. TIME-LIMITED TOKENS:
+   - Authorization tokens instead of stored usernames
+   - Tokens expire (like API keys)
+   - Reduces risk of credential theft
+
+4. HARDWARE-BOUND LICENSING:
+   - Machine ID becomes cryptographic key
+   - License tied to hardware + user (dual-lock)
+   - High security for valuable software
+
+
+================================================================================
+                           SECURITY CONTACT
+================================================================================
+
+For security vulnerabilities or concerns:
+Contact: Clebson Luan Alves da Silva
+
+Do NOT publicly disclose security issues.
+Report privately for responsible disclosure.
+
+
+================================================================================
+                        END OF SECURITY MODEL
+================================================================================

@@ -1,24 +1,19 @@
-# Ambientes virtuais
-/.venv
-/venv/
-/env/
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+build/
+dist/
+*.egg-info/
 
-# Arquivos de entrada (dados)
-/Pasta de Viagens Itu.xlsx
-/Pasta*.xlsx
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
 
-# Arquivos de saída gerados
-/solicitacao de pickings *.xlsx
-/solicitacao de pickings *.csv
-/solicitacao de pickings *.ods
-
-# Log
-log.txt
-
-# IDE e Editor
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -26,10 +21,26 @@ log.txt
 *~
 .DS_Store
 
-# Pasta de referência (opcional)
+# Project-specific - Data files (private, never commit)
+*.csv
+*.xlsx
+*.xls
+*.ods
+*.json.bak
+log.txt
+Pasta*.xlsx
 /Script VBA/
 
-# Arquivos temporários
+# Build artifacts
+dist/
+*.exe
+build/
+
+# Temporary
 *.tmp
 *.bak
 *.backup
+
+# Cache
+.autopickingpy/
+*.log

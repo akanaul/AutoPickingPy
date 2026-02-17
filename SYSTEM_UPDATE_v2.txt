@@ -1,0 +1,204 @@
+================================================================================
+                        SYSTEM UPDATE - Version 2
+                    WebGitHub Verification Only (No Cache)
+================================================================================
+
+WHAT CHANGED:
+The AutoPickingPy license system has been upgraded from Version 1 to Version 2.
+
+Version 1 (OLD):
+  - Cached authorization data locally for 24 hours
+  - Allowed offline use after first online authorization
+  - Vulnerability: Local cache could be modified/extended by users
+
+Version 2 (NEW):  
+  - Requires LIVE GITHUB verification for EVERY authorization
+  - NO local caching of authorization data
+  - NO offline mode
+  - More secure: No local files to exploit
+
+
+================================================================================
+                          FILES THAT CHANGED
+================================================================================
+
+1. license_manager.py
+   - Removed: load_cached_authorized_users()
+   - Removed: save_authorized_users_cache()
+   - Removed: get_authorized_users() (with cache fallback)
+   - Added: fetch_authorized_users_from_github() with retry logic
+   - Added: log_authorization_attempt() for audit trail
+   - Changed is_user_authorized() to return (bool, reason) tuple
+   - Changed authorize() to use live GitHub verification
+   
+   IMPACT: All authorization now goes to GitHub every time
+
+2. gerar_solicitacao_pickings.py
+   - Already integrated with license check in Version 1
+   - No code changes needed for Version 2
+   - Will use new live verification automatically
+
+3. NEW FILES ADDED:
+   - SECURITY_MODEL.txt (detailed security architecture)
+   - SYSTEM_UPDATE_v2.txt (this file)
+
+
+================================================================================
+                        WHAT USERS WILL SEE
+================================================================================
+
+AUTHORIZATION PROCESS (Unchanged):
+  1. Start application
+  2. See license header
+  3. Enter GitHub username/email
+  4. [NEW] Wait 10 seconds (GitHub verification)
+  5. [NEW] Either GRANTED or DENIED (no fallback)
+
+CHANGES FROM USER PERSPECTIVE:
+  [REMOVED] No more "Using cached authentication data" message
+  [ADDED] More detailed authorization verification messages
+  [ADDED] New "System ID" display for hardware-locking
+  [ADDED] Audit log of all authorization attempts
+  [REQUIREMENT] Must have internet connection to run
+
+
+================================================================================
+                        MIGRATION STEPS
+================================================================================
+
+For Developers/Admins:
+
+1. Pull the updated code:
+   git pull origin main
+
+2. Review the new security model:
+   Read: SECURITY_MODEL.txt
+
+3. Delete old cache files (optional cleanup):
+   rm ~/.autopickingpy/auth_cache.json
+
+4. Rebuild the executable:
+   .\build.bat
+
+5. Test with a known user:
+   .\dist\AutoPickingPy.exe
+   [Enter username from AUTHORIZED_USERS.json]
+
+For Users:
+  - No action needed
+  - Update to newest executable version
+  - Application will now require internet connection
+
+
+================================================================================
+                      SECURITY IMPROVEMENTS
+================================================================================
+
+Problem (v1):  User could modify ~/.autopickingpy/auth_cache.json
+Solution (v2): No local auth cache exists anymore
+
+Problem (v1):  Revocation took 24 hours to take effect
+Solution (v2): Revocation is immediate (next auth attempt)
+
+Problem (v1):  Offline use allowed stale authorization data
+Solution (v2): Live GitHub required = always current data
+
+Problem (v1):  No audit trail of who accessed what
+Solution (v2): Audit log records all attempts (success/failure)
+
+Result:
+  ✓ Stronger security
+  ✓ Better compliance
+  ✓ Real-time control
+  ✓ Audit trail for forensics
+
+
+================================================================================
+                        NETWORK REQUIREMENTS
+================================================================================
+
+NEW REQUIREMENT: Internet connection needed to run the application
+
+REQUIRED:
+  - Outbound HTTPS to GitHub (port 443)
+  - Ability to reach: github.com, raw.githubusercontent.com
+  - Requires DNS resolution for github.com
+
+TIMEOUT SETTINGS:
+  - Retry attempts: 3 (automatic)
+  - Timeout per attempt: 10 seconds
+  - Total max wait: ~30 seconds
+
+IF GITHUB IS DOWN:
+  - Application cannot run (by design)
+  - Error message explains GitHub unreachable
+  - Try again when GitHub is back online
+
+
+================================================================================
+                      COMMON QUESTIONS
+================================================================================
+
+Q: What happens if the internet goes down?
+A: Application will not start. This is intentional for security.
+   Revocations and expiration changes must take effect immediately.
+
+Q: Can users still work offline?
+A: No. Version 2 requires GitHub for every launch.
+   Consider if this is acceptable for your use case.
+
+Q: How do I revoke a user immediately?
+A: Edit AUTHORIZED_USERS.json in GitHub:
+   1. Set "revoked": true
+   2. Commit and push
+   3. User is denied on next login attempt (~30 seconds to take effect)
+
+Q: What if I need offline mode?
+A: Contact developers. Future v3 may support signed tokens for offline use.
+   v2 prioritizes security over offline capability.
+
+Q: Is the audit log private?
+A: Yes. Log is stored locally at ~/.autopickingpy/authorization_audit.log
+   Read-only, cannot be edited to fake authorization.
+
+Q: Can users see authorization data?
+A: Users see only:
+   - Their own authorization status (GRANTED/DENIED)
+   - Expiration date (if authorized)
+   - Reason for denial
+   No access to other users' data.
+
+
+================================================================================
+                    ROLLBACK PROCEDURE (If needed)
+================================================================================
+
+If you need to go back to Version 1 (not recommended):
+
+1. Check out previous version:
+   git log --oneline
+   git checkout [commit-hash-before-v2]
+
+2. Rebuild:
+   .\build.bat
+
+3. Note: Version 1 cache will reappear automatically if available
+
+NOTE: Version 1 is less secure. Strongly recommend staying on Version 2.
+
+
+================================================================================
+                        FOR MORE INFORMATION
+================================================================================
+
+- Complete security architecture: SECURITY_MODEL.txt
+- GitHub setup details: GITHUB_LICENSE_SYSTEM.txt
+- License terms: LICENSE
+- Authorization troubleshooting: GITHUB_LICENSE_SYSTEM.txt (Section 7)
+
+Questions? Contact: Clebson Luan Alves da Silva
+
+
+================================================================================
+                        END OF UPDATE NOTICE
+================================================================================
