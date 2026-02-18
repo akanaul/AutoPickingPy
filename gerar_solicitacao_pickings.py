@@ -424,15 +424,26 @@ def main() -> None:
     logging.info("Arquivo de entrada: %s", input_path)
 
     wb = load_workbook(input_path, data_only=True)
-    ws = wb.worksheets[0]
+    if 'PASTA DE VIAGEM' in wb.sheetnames:
+        ws = wb['PASTA DE VIAGEM']
+    else:
+        ws = wb.worksheets[0]
+        logging.warning("Aba 'PASTA DE VIAGEM' não encontrada. Usando a primeira aba: %s", ws.title)
     if ws.auto_filter:
         ws.auto_filter.ref = None
         for row_idx in range(1, (ws.max_row or 0) + 1):
             ws.row_dimensions[row_idx].hidden = False
 
+
     all_headers = [
         ws.cell(row=HEADER_ROW, column=col).value for col in range(1, 35)
     ]
+    logging.info("Cabeçalho lido da planilha:")
+    for idx, header in enumerate(all_headers, 1):
+        logging.info(f"Coluna {idx}: {repr(header)}")
+    print("Cabeçalho lido da planilha:")
+    for idx, header in enumerate(all_headers, 1):
+        print(f"Coluna {idx}: {repr(header)}")
 
     origin_idx = _find_header_index(all_headers, "ORIGEM")
     date_idx = _find_header_index(all_headers, "DATA_SAIDA")

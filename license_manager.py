@@ -17,7 +17,7 @@ class LicenseManager:
     
     # GitHub gist configuration (update with your gist URL)
     # Create a GitHub gist with AUTHORIZED_USERS.json content and paste the raw URL here
-    GITHUB_GIST_URL = "https://gist.githubusercontent.com/akanaul/YOUR_GIST_ID/raw/AUTHORIZED_USERS.json"
+    GITHUB_GIST_URL = "https://gist.githubusercontent.com/akanaul/22c5e8a827d82f2fe66f3bfdddfa024b/raw/AUTHORIZED_USERS.json"
     
     # Audit logging (only records attempts, never stores auth data)
     AUDIT_DIR = Path(os.path.expanduser("~/.autopickingpy"))
@@ -91,32 +91,42 @@ See LICENSE file for complete terms.
         
         Returns dict with user info, or None if GitHub cannot be reached.
         """
+        import logging
         try:
             # Add timestamp to prevent any caching by intermediaries
             cache_bust = datetime.now().timestamp()
             url = f"{self.GITHUB_GIST_URL}?t={cache_bust}"
-            
+            logging.info(f"Conectando ao gist remoto: {url}")
             response = requests.get(url, timeout=self.NETWORK_TIMEOUT)
-            
+            logging.info(f"Status HTTP do gist: {response.status_code}")
+            logging.info(f"Trecho do conteúdo retornado: {response.text[:200]}")
             if response.status_code == 200:
                 data = response.json()
                 self.fetch_timestamp = datetime.now()
                 return data
             else:
                 print(f"[ERROR] GitHub gist returned status {response.status_code}")
+                logging.error(f"GitHub gist retornou status {response.status_code}")
                 return None
-                
         except requests.exceptions.Timeout:
             if retry < self.RETRY_ATTEMPTS:
                 print(f"[INFO] Timeout, retrying... (attempt {retry + 1}/{self.RETRY_ATTEMPTS})")
+                logging.warning(f"Timeout ao conectar ao gist. Tentando novamente ({retry + 1}/{self.RETRY_ATTEMPTS})")
                 return self.fetch_authorized_users_from_github(retry + 1)
             print("[ERROR] Network timeout - GitHub is unreachable")
+            logging.error("Network timeout - GitHub is unreachable")
             return None
         except requests.exceptions.ConnectionError:
             if retry < self.RETRY_ATTEMPTS:
                 print(f"[INFO] Connection failed, retrying... (attempt {retry + 1}/{self.RETRY_ATTEMPTS})")
+                logging.warning(f"Falha de conexão ao gist. Tentando novamente ({retry + 1}/{self.RETRY_ATTEMPTS})")
                 return self.fetch_authorized_users_from_github(retry + 1)
             print("[ERROR] Cannot connect to GitHub - authorization requires internet connection")
+            logging.error("Cannot connect to GitHub - authorization requires internet connection")
+            return None
+        except Exception as e:
+            logging.error(f"Erro inesperado ao acessar gist remoto: {e}")
+            print(f"[ERROR] Erro inesperado ao acessar gist remoto: {e}")
             return None
         except Exception as e:
             print(f"[ERROR] Failed to fetch authorization: {e}")
@@ -435,24 +445,50 @@ def check_license_and_authorize() -> bool:
             manager.log_authorization_attempt("UNKNOWN", "DENIED", "No username provided")
             return False
         
-        # Step 2: Verify GitHub login credentials
+        # Step 2: Solicitar senha definida no gist
+        import logging
         print("\n" + "="*80)
-        print(f"GitHub Login Verification for @{username}")
+        print(f"Autenticação local para @{username}")
         print("="*80)
-        print("Provide your GitHub credentials to verify account ownership.")
-        print("Use your GitHub password or a Personal Access Token (PAT).")
-        print("For security, credentials are NOT saved or logged.")
-        
-        if not manager.verify_login(username):
-            print("\n[ERROR] GitHub login verification failed")
-            manager.log_authorization_attempt(username, "DENIED", "Login verification failed")
-            return False
-        
-        # Step 3: Check authorization
+        logging.info(f"Iniciando autenticação para usuário: {username}")
+        import getpass
+        senha = getpass.getpass("Senha: ")
+        logging.info(f"Senha informada para usuário {username} (não exibida por segurança)")
+
+        # Step 3: Check authorization e senha
         print("\n[INFO] Checking authorization database...")
-        
-        # Authorize (LIVE GitHub check)
-        return manager.authorize(username)
+        logging.info("Buscando usuários autorizados no gist...")
+        users = manager.fetch_authorized_users_from_github()
+        if users is None or username not in users:
+            print("[ERROR] Usuário não encontrado no gist de autorização.")
+            logging.error(f"Usuário '{username}' não encontrado no gist de autorização.")
+            manager.log_authorization_attempt(username, "DENIED", "Usuário não encontrado no gist")
+            return False
+        user_data = users[username]
+        senha_gist = user_data.get('senha') or user_data.get('password')
+        if not senha_gist:
+            print("[ERROR] Usuário não possui senha cadastrada no gist.")
+            logging.error(f"Usuário '{username}' não possui senha cadastrada no gist.")
+            manager.log_authorization_attempt(username, "DENIED", "Usuário sem senha no gist")
+            return False
+        if senha != senha_gist:
+            print("[ERROR] Senha incorreta.")
+            logging.warning(f"Senha incorreta para usuário '{username}'.")
+            manager.log_authorization_attempt(username, "DENIED", "Senha incorreta")
+            return False
+        logging.info(f"Senha correta para usuário '{username}'. Prosseguindo com validações adicionais.")
+        # Se passou, segue com as demais validações normais
+        autorizado, motivo = manager.is_user_authorized(username)
+        if autorizado:
+            print("[SUCCESS] Login realizado com sucesso.")
+            logging.info(f"Autorização concedida para usuário '{username}'. Motivo: {motivo}")
+            manager.log_authorization_attempt(username, "GRANTED", motivo)
+            return True
+        else:
+            print(f"[ERROR] {motivo}")
+            logging.error(f"Autorização negada para usuário '{username}'. Motivo: {motivo}")
+            manager.log_authorization_attempt(username, "DENIED", motivo)
+            return False
         
     except KeyboardInterrupt:
         print("\n[INFO] Authorization cancelled by user")

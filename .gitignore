@@ -1,3 +1,5 @@
+# Arquivos temporários/desprotegidos
+*NoLi.py
 # Python
 __pycache__/
 *.py[cod]
