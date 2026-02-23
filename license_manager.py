@@ -99,7 +99,8 @@ See LICENSE file for complete terms.
             logging.info(f"Conectando ao gist remoto: {url}")
             response = requests.get(url, timeout=self.NETWORK_TIMEOUT)
             logging.info(f"Status HTTP do gist: {response.status_code}")
-            logging.info(f"Trecho do conteúdo retornado: {response.text[:200]}")
+            # do not log any portion of the gist content for security reasons
+            logging.info(f"Gist response length: {len(response.text)} bytes")
             if response.status_code == 200:
                 data = response.json()
                 self.fetch_timestamp = datetime.now()
