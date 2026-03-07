@@ -32,7 +32,7 @@ REM Activate venv
 call .venv\Scripts\activate.bat
 
 echo [INFO] Installing dependencies...
-pip install pyinstaller openpyxl requests
+pip install pyinstaller openpyxl 
 
 REM Create build directory
 if not exist "build" mkdir build
@@ -45,10 +45,8 @@ pyinstaller.exe ^
     --onefile ^
     --windowed ^
     --add-data "LICENSE:." ^
-    --add-data "AUTHORIZED_USERS.json:." ^
     --add-data "Pasta de Viagens Itu.xlsx:." ^
     --hidden-import=openpyxl ^
-    --hidden-import=requests ^
     --hidden-import=odf ^
     --version-file=version_info.txt ^
     --output=./dist ^

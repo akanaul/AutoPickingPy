@@ -10,18 +10,29 @@ import json
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
-from openpyxl import load_workbook, Workbook
-from openpyxl.utils.datetime import from_excel
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
+# Ensure script runs inside .venv if available ----------------------------------
+# When a corporate environment has a local Python installation that is restricted
+# we want to transparently re‑launch using the virtual environment created by
+# `setup.bat`.  This block will restart the interpreter under `.venv` if it's
+# present and we're currently running with the system Python.
+
+VENV_PY = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe")
+if os.path.exists(VENV_PY):
+    # 'sys.prefix' of a venv contains the venv path; check to avoid loops
+    if not sys.prefix.lower().startswith(os.path.join(os.getcwd(), ".venv").lower()):
+        os.execv(VENV_PY, [VENV_PY] + sys.argv)
+# -----------------------------------------------------------------------------
 
 from openpyxl import load_workbook, Workbook
 from openpyxl.utils.datetime import from_excel
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
 
-# License and authorization
-from license_manager import check_license_and_authorize
+from openpyxl import load_workbook, Workbook
+from openpyxl.utils.datetime import from_excel
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
+
 
 try:
     from odf.opendocument import OpenDocumentSpreadsheet
@@ -586,12 +597,6 @@ if __name__ == "__main__":
         handlers=[logging.FileHandler(log_path, mode="w", encoding="utf-8"), logging.StreamHandler(sys.stdout)],
     )
     
-    # Check license and authorize user (required before running application)
-    if not check_license_and_authorize():
-        print("\n[CRITICAL] Authorization failed. Cannot continue.")
-        sys.exit(1)
-    
-    print("\n[INFO] Authorization successful. Starting application...\n")
     
     try:
         main()
