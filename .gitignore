@@ -46,3 +46,12 @@ build/
 # Cache
 .autopickingpy/
 *.log
+
+# Local test runner (unversioned)
+run_test.bat
+
+# PyInstaller Spec files
+*.spec
+
+# Email configuration (private, never commit)
+config_email.txt

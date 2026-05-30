@@ -45,8 +45,8 @@ pyinstaller.exe ^
     --onefile ^
     --windowed ^
     --hidden-import=openpyxl ^
-    --hidden-import=odf ^
-    --output=./dist ^
+    --hidden-import=win32com ^
+    --distpath=./dist ^
     gerar_solicitacao_pickings.py
 
 echo.
