@@ -26,7 +26,6 @@ if os.path.exists(VENV_PY):
 from openpyxl import load_workbook, Workbook
 from openpyxl.utils.datetime import from_excel
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
 try:
     from odf.opendocument import OpenDocumentSpreadsheet
     from odf.table import Table, TableRow, TableCell, TableColumn, CoveredTableCell
@@ -610,7 +609,12 @@ if __name__ == "__main__":
             logging.StreamHandler(sys.stdout),
         ],
     )
+<<<<<<< HEAD
+
+=======
     
+    
+>>>>>>> 252762b0f0f1190cb3fa50285823bb90615f70ac
     try:
         main()
     except Exception:
