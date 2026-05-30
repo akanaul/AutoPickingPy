@@ -14,15 +14,6 @@ from openpyxl import load_workbook, Workbook
 from openpyxl.utils.datetime import from_excel
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
-
-from openpyxl import load_workbook, Workbook
-from openpyxl.utils.datetime import from_excel
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Alignment, Border, Side, Font, PatternFill
-
-# License and authorization
-from license_manager import check_license_and_authorize
-
 try:
     from odf.opendocument import OpenDocumentSpreadsheet
     from odf.table import Table, TableRow, TableCell, TableColumn, CoveredTableCell
@@ -50,7 +41,6 @@ OUTPUT_HEADERS = [
     "HORA SUB PICKING",
     "HORA SAIDA CARGA",
 ]
-
 
 
 def _find_input_workbook(root_dir: str) -> str:
@@ -159,10 +149,10 @@ def _load_output_template(root_dir: str) -> tuple[Workbook, object]:
     wb = Workbook()
     ws = wb.active
     ws.title = "CABREUVA"
-    
+
     ws.row_dimensions[1].height = 25
     ws.row_dimensions[2].height = 20
-    
+
     return wb, ws
 
 
@@ -212,9 +202,7 @@ def _write_ods(path: str, headers: list[str], rows: list[list[object]]) -> None:
     )
 
     data_style = Style(name="DataCell", family="table-cell")
-    data_style.addElement(
-        TableCellProperties(border="0.5pt solid #000000")
-    )
+    data_style.addElement(TableCellProperties(border="0.5pt solid #000000"))
     data_style.addElement(
         ParagraphProperties(textalign="center", verticalalign="middle")
     )
@@ -233,10 +221,16 @@ def _write_ods(path: str, headers: list[str], rows: list[list[object]]) -> None:
     time_number.addElement(Minutes(style="long"))
 
     date_cell_style = Style(
-        name="DateCell", family="table-cell", parentstylename="DataCell", datastylename="DateStyle"
+        name="DateCell",
+        family="table-cell",
+        parentstylename="DataCell",
+        datastylename="DateStyle",
     )
     time_cell_style = Style(
-        name="TimeCell", family="table-cell", parentstylename="DataCell", datastylename="TimeStyle"
+        name="TimeCell",
+        family="table-cell",
+        parentstylename="DataCell",
+        datastylename="TimeStyle",
     )
 
     doc.styles.addElement(title_style)
@@ -268,7 +262,7 @@ def _write_ods(path: str, headers: list[str], rows: list[list[object]]) -> None:
     title_row.addElement(title_cell)
     for _ in range(len(headers) - 2):
         title_row.addElement(CoveredTableCell())
-    
+
     total_cell = TableCell(stylename=title_style)
     total_cell.addElement(P(text=f"Total: {len(rows)}"))
     title_row.addElement(total_cell)
@@ -369,7 +363,9 @@ def _convert_xlsx_to_ods(soffice_path: str, xlsx_path: str, ods_path: str) -> bo
 
         base_name = os.path.splitext(os.path.basename(xlsx_path))[0]
         generated = os.path.join(out_dir, f"{base_name}.ods")
-        if os.path.abspath(generated) != os.path.abspath(ods_path) and os.path.exists(generated):
+        if os.path.abspath(generated) != os.path.abspath(ods_path) and os.path.exists(
+            generated
+        ):
             if os.path.exists(ods_path):
                 os.remove(ods_path)
             os.replace(generated, ods_path)
@@ -381,7 +377,11 @@ def _convert_xlsx_to_ods(soffice_path: str, xlsx_path: str, ods_path: str) -> bo
 
 def _cleanup_old_outputs(root_dir: str, target: date) -> None:
     pattern = os.path.join(root_dir, "solicitacao de pickings *.?")
-    for path in glob.glob(pattern + "xlsx") + glob.glob(pattern + "csv") + glob.glob(pattern + "ods"):
+    for path in (
+        glob.glob(pattern + "xlsx")
+        + glob.glob(pattern + "csv")
+        + glob.glob(pattern + "ods")
+    ):
         base = os.path.basename(path)
         date_part = base.replace("solicitacao de pickings ", "").split(".")[0]
         try:
@@ -413,7 +413,9 @@ def _prepare_output_path(path: str) -> str:
         base, ext = os.path.splitext(path)
         stamp = datetime.now().strftime("%H%M%S")
         alt_path = f"{base} ({stamp}){ext}"
-        logging.warning("Falha ao remover arquivo. Usando nome alternativo: %s", alt_path)
+        logging.warning(
+            "Falha ao remover arquivo. Usando nome alternativo: %s", alt_path
+        )
         return alt_path
 
 
@@ -424,20 +426,19 @@ def main() -> None:
     logging.info("Arquivo de entrada: %s", input_path)
 
     wb = load_workbook(input_path, data_only=True)
-    if 'PASTA DE VIAGEM' in wb.sheetnames:
-        ws = wb['PASTA DE VIAGEM']
+    if "PASTA DE VIAGEM" in wb.sheetnames:
+        ws = wb["PASTA DE VIAGEM"]
     else:
         ws = wb.worksheets[0]
-        logging.warning("Aba 'PASTA DE VIAGEM' não encontrada. Usando a primeira aba: %s", ws.title)
+        logging.warning(
+            "Aba 'PASTA DE VIAGEM' não encontrada. Usando a primeira aba: %s", ws.title
+        )
     if ws.auto_filter:
         ws.auto_filter.ref = None
         for row_idx in range(1, (ws.max_row or 0) + 1):
             ws.row_dimensions[row_idx].hidden = False
 
-
-    all_headers = [
-        ws.cell(row=HEADER_ROW, column=col).value for col in range(1, 35)
-    ]
+    all_headers = [ws.cell(row=HEADER_ROW, column=col).value for col in range(1, 35)]
     logging.info("Cabeçalho lido da planilha:")
     for idx, header in enumerate(all_headers, 1):
         logging.info(f"Coluna {idx}: {repr(header)}")
@@ -457,9 +458,7 @@ def main() -> None:
     filtered_rows: list[list[object]] = []
     max_row = ws.max_row or 0
     for row_idx in range(DATA_START_ROW, max_row + 1):
-        row_all = [
-            ws.cell(row=row_idx, column=col).value for col in range(1, 35)
-        ]
+        row_all = [ws.cell(row=row_idx, column=col).value for col in range(1, 35)]
 
         factory_value = _normalize_text(row_all[origin_idx])
         if factory_value != "FABRICA ITU":
@@ -491,25 +490,29 @@ def main() -> None:
     out_ws.merge_cells(f"A1:{get_column_letter(num_cols - 1)}1")
     out_ws.cell(row=1, column=1, value="CDV E CABREUVA")
     out_ws.cell(row=1, column=num_cols, value=f"Total: {len(filtered_rows)}")
-    
+
     thin_border = Border(
         left=Side(style="thin"),
         right=Side(style="thin"),
         top=Side(style="thin"),
         bottom=Side(style="thin"),
     )
-    
+
     for col in range(1, num_cols + 1):
         cell = out_ws.cell(row=1, column=col)
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.font = Font(bold=True, color="FFFFFF", size=11)
-        cell.fill = PatternFill(start_color="2E5C8A", end_color="2E5C8A", fill_type="solid")
+        cell.fill = PatternFill(
+            start_color="2E5C8A", end_color="2E5C8A", fill_type="solid"
+        )
         cell.border = thin_border
 
     for col_idx, header in enumerate(output_headers, 1):
         cell = out_ws.cell(row=2, column=col_idx, value=header)
         cell.font = Font(bold=True, color="FFFFFF", size=10)
-        cell.fill = PatternFill(start_color="4A90E2", end_color="4A90E2", fill_type="solid")
+        cell.fill = PatternFill(
+            start_color="4A90E2", end_color="4A90E2", fill_type="solid"
+        )
         cell.alignment = Alignment(horizontal="center", vertical="center")
         cell.border = thin_border
 
@@ -520,7 +523,7 @@ def main() -> None:
 
     if filtered_rows:
         data_last_row = 2 + len(filtered_rows)
-        
+
         for row in range(3, data_last_row + 1):
             out_ws.cell(row=row, column=1).number_format = "General"
             out_ws.cell(row=row, column=4).number_format = "dd/mm/yyyy"
@@ -528,25 +531,31 @@ def main() -> None:
             out_ws.cell(row=row, column=6).number_format = "hh:mm"
             out_ws.row_dimensions[row].height = 15
 
-        for row in out_ws.iter_rows(min_row=1, max_row=data_last_row, min_col=1, max_col=num_cols):
+        for row in out_ws.iter_rows(
+            min_row=1, max_row=data_last_row, min_col=1, max_col=num_cols
+        ):
             for cell in row:
                 cell.alignment = Alignment(horizontal="center", vertical="center")
 
-        for row in out_ws.iter_rows(min_row=3, max_row=data_last_row, min_col=1, max_col=num_cols):
+        for row in out_ws.iter_rows(
+            min_row=3, max_row=data_last_row, min_col=1, max_col=num_cols
+        ):
             for cell in row:
                 cell.border = thin_border
-        
+
         for row in out_ws.iter_rows(min_row=2, max_row=2, min_col=1, max_col=num_cols):
             for cell in row:
                 cell.border = thin_border
-        
+
         max_lengths = [len(str(h)) for h in output_headers]
-        for row in out_ws.iter_rows(min_row=3, max_row=data_last_row, min_col=1, max_col=num_cols):
+        for row in out_ws.iter_rows(
+            min_row=3, max_row=data_last_row, min_col=1, max_col=num_cols
+        ):
             for col_idx, cell in enumerate(row, 1):
                 length = len(_format_csv_value(cell.value))
                 if length > max_lengths[col_idx - 1]:
                     max_lengths[col_idx - 1] = length
-        
+
         for col_idx, length in enumerate(max_lengths, 1):
             adjusted_width = min(length + 2, 30)
             out_ws.column_dimensions[get_column_letter(col_idx)].width = adjusted_width
@@ -583,16 +592,12 @@ if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[logging.FileHandler(log_path, mode="w", encoding="utf-8"), logging.StreamHandler(sys.stdout)],
+        handlers=[
+            logging.FileHandler(log_path, mode="w", encoding="utf-8"),
+            logging.StreamHandler(sys.stdout),
+        ],
     )
-    
-    # Check license and authorize user (required before running application)
-    if not check_license_and_authorize():
-        print("\n[CRITICAL] Authorization failed. Cannot continue.")
-        sys.exit(1)
-    
-    print("\n[INFO] Authorization successful. Starting application...\n")
-    
+
     try:
         main()
     except Exception:

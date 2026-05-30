@@ -45,8 +45,6 @@ pyinstaller.exe ^
     --onefile ^
     --windowed ^
     --add-data "LICENSE:." ^
-    --add-data "AUTHORIZED_USERS.json:." ^
-    --add-data "Pasta de Viagens Itu.xlsx:." ^
     --hidden-import=openpyxl ^
     --hidden-import=requests ^
     --hidden-import=odf ^
